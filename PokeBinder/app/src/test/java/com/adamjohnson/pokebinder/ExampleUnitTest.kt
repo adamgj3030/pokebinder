@@ -1,4 +1,4 @@
-package com.example.pokebinder
+package com.adamjohnson.pokebinder
 
 import org.junit.Test
 

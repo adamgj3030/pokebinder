@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.adamjohnson.pokebinder.LoginFragment"
+        android:label="LoginFragment" />
+
+    <fragment
+        android:id="@+id/feedFragment"
+        android:name="com.adamjohnson.pokebinder.FeedFragment"
+        android:label="FeedFragment" />
+
+    <fragment
+        android:id="@+id/collectionFragment"
+        android:name="com.adamjohnson.pokebinder.CollectionFragment"
+        android:label="CollectionFragment" />
+
+    <fragment
+        android:id="@+id/cardSearchFragment"
+        android:name="com.adamjohnson.pokebinder.CardSearchFragment"
+        android:label="CardSearchFragment" />
+
+    <fragment
+        android:id="@+id/binderEditorFragment"
+        android:name="com.adamjohnson.pokebinder.BinderEditorFragment"
+        android:label="BinderEditorFragment" />
+
+    <fragment
+        android:id="@+id/draftsFragment"
+        android:name="com.adamjohnson.pokebinder.DraftsFragment"
+        android:label="DraftsFragment" />
+
+    <fragment
+        android:id="@+id/pageDetailFragment"
+        android:name="com.adamjohnson.pokebinder.PageDetailFragment"
+        android:label="PageDetailFragment" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.adamjohnson.pokebinder.ProfileFragment"
+        android:label="ProfileFragment" />
+
+</navigation>
