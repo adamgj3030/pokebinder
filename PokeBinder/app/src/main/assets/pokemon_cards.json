@@ -1,0 +1,37 @@
+[
+  {
+    "cardId": "cel25c-24_A",
+    "name": "_____'s Pikachu",
+    "imageUrl": "https://images.pokemontcg.io/cel25c/24_A.png",
+    "setName": "Celebrations: Classic Collection",
+    "types": ["Lightning"]
+  },
+  {
+    "cardId": "basep-24",
+    "name": "_____'s Pikachu",
+    "imageUrl": "https://images.pokemontcg.io/basep/24.png",
+    "setName": "Wizards Black Star Promos",
+    "types": ["Lightning"]
+  },
+  {
+    "cardId": "swsh10tg-TG01",
+    "name": "Abomasnow",
+    "imageUrl": "https://images.pokemontcg.io/swsh10tg/TG01.png",
+    "setName": "Astral Radiance Trainer Gallery",
+    "types": ["Grass"]
+  },
+  {
+    "cardId": "xy8-40",
+    "name": "Abomasnow",
+    "imageUrl": "https://images.pokemontcg.io/xy8/40.png",
+    "setName": "BREAKthrough",
+    "types": ["Water"]
+  },
+  {
+    "cardId": "sv3pt5-63",
+    "name": "Abra",
+    "imageUrl": "https://images.pokemontcg.io/sv3pt5/63.png",
+    "setName": "151",
+    "types": ["Psychic"]
+  }
+]

@@ -6,42 +6,42 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.adamjohnson.pokebinder.LoginFragment"
+        android:name="com.adamjohnson.pokebinder.ui.LoginFragment"
         android:label="LoginFragment" />
 
     <fragment
         android:id="@+id/feedFragment"
-        android:name="com.adamjohnson.pokebinder.FeedFragment"
+        android:name="com.adamjohnson.pokebinder.ui.FeedFragment"
         android:label="FeedFragment" />
 
     <fragment
         android:id="@+id/collectionFragment"
-        android:name="com.adamjohnson.pokebinder.CollectionFragment"
+        android:name="com.adamjohnson.pokebinder.ui.CollectionFragment"
         android:label="CollectionFragment" />
 
     <fragment
         android:id="@+id/cardSearchFragment"
-        android:name="com.adamjohnson.pokebinder.CardSearchFragment"
+        android:name="com.adamjohnson.pokebinder.ui.CardSearchFragment"
         android:label="CardSearchFragment" />
 
     <fragment
         android:id="@+id/binderEditorFragment"
-        android:name="com.adamjohnson.pokebinder.BinderEditorFragment"
+        android:name="com.adamjohnson.pokebinder.ui.BinderEditorFragment"
         android:label="BinderEditorFragment" />
 
     <fragment
         android:id="@+id/draftsFragment"
-        android:name="com.adamjohnson.pokebinder.DraftsFragment"
+        android:name="com.adamjohnson.pokebinder.ui.DraftsFragment"
         android:label="DraftsFragment" />
 
     <fragment
         android:id="@+id/pageDetailFragment"
-        android:name="com.adamjohnson.pokebinder.PageDetailFragment"
+        android:name="com.adamjohnson.pokebinder.ui.PageDetailFragment"
         android:label="PageDetailFragment" />
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.adamjohnson.pokebinder.ProfileFragment"
+        android:name="com.adamjohnson.pokebinder.ui.ProfileFragment"
         android:label="ProfileFragment" />
 
 </navigation>

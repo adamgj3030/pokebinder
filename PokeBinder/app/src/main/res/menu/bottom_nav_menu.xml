@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/feedFragment"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Feed" />
+
+    <item
+        android:id="@+id/collectionFragment"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Collection" />
+
+    <item
+        android:id="@+id/binderEditorFragment"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="Create" />
+
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Profile" />
+
+</menu>
