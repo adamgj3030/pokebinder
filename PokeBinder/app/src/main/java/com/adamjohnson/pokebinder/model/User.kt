@@ -1,4 +1,4 @@
-package com.adamjohnson.pokebinder.model
+package com.adamjohnson.pokebinder.data.model
 
 data class User(
     val userId: String = "",

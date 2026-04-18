@@ -1,4 +1,4 @@
-package com.adamjohnson.pokebinder.ui
+package com.adamjohnson.pokebinder.ui.binder
 
 import androidx.fragment.app.Fragment
 import com.adamjohnson.pokebinder.R
