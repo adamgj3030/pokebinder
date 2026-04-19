@@ -1,22 +1,79 @@
 package com.adamjohnson.pokebinder.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.adamjohnson.pokebinder.data.model.SavedCard
+import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
+import com.adamjohnson.pokebinder.data.model.PokemonCard
+import com.adamjohnson.pokebinder.data.repository.AuthRepository
+import com.adamjohnson.pokebinder.data.repository.CardRepository
 import com.adamjohnson.pokebinder.data.repository.CollectionRepository
 import com.adamjohnson.pokebinder.utils.UiState
 
-class CollectionViewModel : ViewModel() {
+class CollectionViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val authRepository = AuthRepository()
     private val collectionRepository = CollectionRepository()
+    private val cardRepository = CardRepository(
+        PokemonCardLocalDataSource(application.applicationContext)
+    )
 
-    private val _savedCardsState =
-        MutableLiveData<UiState<List<SavedCard>>>(UiState.Success(emptyList()))
-    val savedCardsState: LiveData<UiState<List<SavedCard>>> = _savedCardsState
+    private var currentUserId: String? = null
 
-    fun loadSavedCards(userId: String) {
-        _savedCardsState.value = UiState.Loading
-        _savedCardsState.value = UiState.Success(collectionRepository.getSavedCards(userId))
+    private val _collectionState = MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
+    val collectionState: LiveData<UiState<List<PokemonCard>>> = _collectionState
+
+    fun loadCollection() {
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId.isNullOrBlank()) {
+            _collectionState.value = UiState.Error("You must be signed in to view your collection.")
+            return
+        }
+
+        currentUserId = userId
+        _collectionState.value = UiState.Loading
+
+        collectionRepository.getSavedCards(userId) { savedCards, errorMessage ->
+            if (savedCards != null) {
+                try {
+                    val cards = savedCards.mapNotNull { savedCard ->
+                        cardRepository.getPokemonCard(savedCard.cardId)
+                    }
+                    _collectionState.postValue(UiState.Success(cards))
+                } catch (exception: Exception) {
+                    _collectionState.postValue(UiState.Error("Unable to load collection."))
+                }
+            } else {
+                _collectionState.postValue(
+                    UiState.Error(errorMessage ?: "Unable to load collection.")
+                )
+            }
+        }
+    }
+
+    fun removeCard(
+        cardId: String,
+        onResult: (String?) -> Unit = {}
+    ) {
+        val userId = currentUserId ?: authRepository.getCurrentUserId()
+
+        if (userId.isNullOrBlank()) {
+            val errorMessage = "You must be signed in to update your collection."
+            _collectionState.value = UiState.Error(errorMessage)
+            onResult(errorMessage)
+            return
+        }
+
+        collectionRepository.removeCard(userId, cardId) { errorMessage ->
+            if (errorMessage == null) {
+                loadCollection()
+            } else {
+                _collectionState.postValue(UiState.Error(errorMessage))
+            }
+
+            onResult(errorMessage)
+        }
     }
 }

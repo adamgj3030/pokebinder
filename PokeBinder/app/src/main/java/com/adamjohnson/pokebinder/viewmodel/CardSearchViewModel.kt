@@ -18,11 +18,33 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
     private val _cardsState = MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
     val cardsState: LiveData<UiState<List<PokemonCard>>> = _cardsState
 
+    private val _searchQuery = MutableLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
+
     init {
         loadCards()
     }
 
     fun loadCards() {
-        _cardsState.value = UiState.Success(cardRepository.getPokemonCards())
+        _cardsState.value = UiState.Loading
+        runSearch(_searchQuery.value.orEmpty())
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        runSearch(query)
+    }
+
+    fun clearSearch() {
+        updateSearchQuery("")
+    }
+
+    private fun runSearch(query: String) {
+        try {
+            val cards = cardRepository.searchPokemonCards(query)
+            _cardsState.value = UiState.Success(cards)
+        } catch (exception: Exception) {
+            _cardsState.value = UiState.Error("Unable to load cards.")
+        }
     }
 }

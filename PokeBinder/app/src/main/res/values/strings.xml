@@ -1,3 +1,36 @@
 <resources>
     <string name="app_name">PokeBinder</string>
+    <string name="login_title">Sign in to PokeBinder</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Account</string>
+    <string name="auth_loading">Working...</string>
+    <string name="profile_title">Profile</string>
+    <string name="profile_signed_in_message">You are signed in to PokeBinder.</string>
+    <string name="sign_out">Sign Out</string>
+
+    <string name="card_search_title">Card Catalog</string>
+    <string name="card_search_subtitle">Search the imported local Pokémon card list.</string>
+    <string name="card_search_hint">Search by name, set, type, or card ID</string>
+    <string name="card_search_loading">Loading cards...</string>
+    <string name="card_search_empty_title">No cards found</string>
+    <string name="card_search_empty_message">Try a different search term.</string>
+    <string name="card_search_error_title">Unable to load cards</string>
+    <string name="card_search_results_default">Results: 0</string>
+    <string name="card_search_results_label">Results: %1$d</string>
+
+    <string name="collection_title">My Collection</string>
+    <string name="collection_subtitle">View the cards you have saved to your collection.</string>
+    <string name="collection_loading">Loading collection...</string>
+    <string name="collection_empty_title">No saved cards yet</string>
+    <string name="collection_empty_message">Save cards from the catalog to see them here.</string>
+    <string name="collection_error_title">Unable to load collection</string>
+    <string name="collection_results_default">Results: 0</string>
+    <string name="collection_results_label">Results: %1$d</string>
+    <string name="remove_from_collection">Remove</string>
+
+    <string name="card_types_label">Types: %1$s</string>
+    <string name="card_types_placeholder">Types: -</string>
+    <string name="pokemon_card_image">Pokémon card image</string>
 </resources>

@@ -3,6 +3,8 @@ package com.adamjohnson.pokebinder
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -28,9 +30,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.feedFragment,
                 R.id.collectionFragment,
                 R.id.profileFragment -> {
-                    if (navController.currentDestination?.id != item.itemId) {
-                        navController.navigate(item.itemId)
-                    }
+                    navigateToTopLevelDestination(navController, item.itemId)
                     true
                 }
 
@@ -60,7 +60,48 @@ class MainActivity : AppCompatActivity() {
             navController.graph = navGraph
         }
 
+        enforceAuthEntryDestination(navController)
         updateBottomNavigation(navController.currentDestination?.id)
+    }
+
+    private fun navigateToTopLevelDestination(
+        navController: NavController,
+        destinationId: Int
+    ) {
+        if (navController.currentDestination?.id == destinationId) {
+            return
+        }
+
+        val navOptions = NavOptions.Builder()
+            .setPopUpTo(R.id.feedFragment, false)
+            .setLaunchSingleTop(true)
+            .build()
+
+        navController.navigate(destinationId, null, navOptions)
+    }
+
+    private fun enforceAuthEntryDestination(navController: NavController) {
+        val currentDestinationId = navController.currentDestination?.id ?: return
+
+        if (authRepository.isSignedIn()) {
+            if (currentDestinationId == R.id.loginFragment) {
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(navController.graph.id, true)
+                    .setLaunchSingleTop(true)
+                    .build()
+
+                navController.navigate(R.id.feedFragment, null, navOptions)
+            }
+        } else {
+            if (currentDestinationId != R.id.loginFragment) {
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(navController.graph.id, true)
+                    .setLaunchSingleTop(true)
+                    .build()
+
+                navController.navigate(R.id.loginFragment, null, navOptions)
+            }
+        }
     }
 
     private fun updateBottomNavigation(destinationId: Int?) {

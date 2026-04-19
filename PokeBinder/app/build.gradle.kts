@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     implementation("androidx.fragment:fragment-ktx:1.8.9")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.10.0")
@@ -60,6 +61,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
 
     implementation("com.google.code.gson:gson:2.13.2")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
