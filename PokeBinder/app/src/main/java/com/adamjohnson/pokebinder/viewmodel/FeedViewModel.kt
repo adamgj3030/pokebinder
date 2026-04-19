@@ -14,10 +14,6 @@ class FeedViewModel : ViewModel() {
     private val _feedState = MutableLiveData<UiState<List<BinderPage>>>(UiState.Loading)
     val feedState: LiveData<UiState<List<BinderPage>>> = _feedState
 
-    init {
-        loadFeedPages()
-    }
-
     fun loadFeedPages() {
         _feedState.value = UiState.Loading
 

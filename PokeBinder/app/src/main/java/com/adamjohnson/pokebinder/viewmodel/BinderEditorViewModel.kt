@@ -56,7 +56,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         if (normalizedPageId == null) {
             startNewDraft()
         } else {
-            loadDraftPage(normalizedPageId)
+            loadEditorPage(normalizedPageId)
         }
     }
 
@@ -91,7 +91,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         onResult(newBinderPage, null)
     }
 
-    fun loadDraftPage(
+    fun loadEditorPage(
         pageId: String,
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
@@ -102,7 +102,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             _selectedSlotIndex.value = null
             updateCanPublish()
 
-            val errorMessage = "You must be signed in to view a binder draft."
+            val errorMessage = "You must be signed in to view this binder page."
             _binderPageState.value = UiState.Error(errorMessage)
             onResult(null, errorMessage)
             return
@@ -122,7 +122,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         _selectedSlotIndex.value = null
         _binderPageState.value = UiState.Loading
 
-        binderPageRepository.getDraftPage(userId, pageId) { binderPage, errorMessage ->
+        binderPageRepository.getEditorPage(userId, pageId) { binderPage, errorMessage ->
             if (binderPage != null) {
                 currentBinderPage = binderPage
                 initializedPageId = binderPage.pageId.takeIf { it.isNotBlank() }
@@ -133,7 +133,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
                 _selectedSlotIndex.postValue(null)
                 updateCanPublish()
                 _binderPageState.postValue(
-                    UiState.Error(errorMessage ?: "Unable to load draft page.")
+                    UiState.Error(errorMessage ?: "Unable to load binder page.")
                 )
             }
 
@@ -197,6 +197,10 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     fun saveCurrentDraft(
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
+        if (isRequestInProgress()) {
+            return
+        }
+
         if (!isCurrentPageEditable()) {
             val errorMessage = "Published pages are read-only."
             _binderPageState.value = UiState.Error(errorMessage)
@@ -208,6 +212,13 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         if (userId.isNullOrBlank()) {
             val errorMessage = "You must be signed in to save a binder draft."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
+        if (currentBinderPage.ownerUserId.isNotBlank() && currentBinderPage.ownerUserId != userId) {
+            val errorMessage = "Invalid user."
             _binderPageState.value = UiState.Error(errorMessage)
             onResult(null, errorMessage)
             return
@@ -238,6 +249,10 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     fun publishCurrentPage(
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
+        if (isRequestInProgress()) {
+            return
+        }
+
         if (!isCurrentPageEditable()) {
             val errorMessage = "Published pages are read-only."
             _binderPageState.value = UiState.Error(errorMessage)
@@ -249,6 +264,13 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         if (userId.isNullOrBlank()) {
             val errorMessage = "You must be signed in to publish a binder page."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
+        if (currentBinderPage.ownerUserId.isNotBlank() && currentBinderPage.ownerUserId != userId) {
+            val errorMessage = "Invalid user."
             _binderPageState.value = UiState.Error(errorMessage)
             onResult(null, errorMessage)
             return
@@ -266,7 +288,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         binderPageRepository.publishPage(userId, currentBinderPage) { publishedBinderPage, errorMessage ->
             if (publishedBinderPage != null) {
                 currentBinderPage = publishedBinderPage
-                initializedPageId = null
+                initializedPageId = publishedBinderPage.pageId.takeIf { it.isNotBlank() }
                 _selectedSlotIndex.postValue(null)
                 updateCanPublish()
                 _binderPageState.postValue(UiState.Success(publishedBinderPage))
@@ -354,6 +376,10 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
     private fun isCurrentPageEditable(): Boolean {
         return currentBinderPage.status == BinderPageStatus.DRAFT
+    }
+
+    private fun isRequestInProgress(): Boolean {
+        return _binderPageState.value == UiState.Loading
     }
 
     companion object {

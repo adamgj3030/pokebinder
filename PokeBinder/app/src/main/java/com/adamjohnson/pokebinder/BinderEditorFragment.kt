@@ -96,7 +96,9 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         }
 
         clearSelectedSlotButton.setOnClickListener {
-            if (currentSelectedSlotIndex == null) {
+            if (!isCurrentPageEditable()) {
+                showShortToast(getString(R.string.binder_editor_read_only))
+            } else if (currentSelectedSlotIndex == null) {
                 showShortToast(getString(R.string.binder_editor_select_slot_first))
             } else {
                 binderEditorViewModel.clearSelectedSlot()
@@ -104,8 +106,13 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         }
 
         saveDraftButton.setOnClickListener {
+            if (!isCurrentPageEditable()) {
+                showShortToast(getString(R.string.binder_editor_read_only))
+                return@setOnClickListener
+            }
+
             binderEditorViewModel.saveCurrentDraft { _, errorMessage ->
-                if (!isAdded) {
+                if (!isAdded || findNavController().currentDestination?.id != R.id.binderEditorFragment) {
                     return@saveCurrentDraft
                 }
 
@@ -115,8 +122,13 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         }
 
         publishButton.setOnClickListener {
+            if (!isCurrentPageEditable()) {
+                showShortToast(getString(R.string.binder_editor_read_only))
+                return@setOnClickListener
+            }
+
             binderEditorViewModel.publishCurrentPage { publishedBinderPage, errorMessage ->
-                if (!isAdded) {
+                if (!isAdded || findNavController().currentDestination?.id != R.id.binderEditorFragment) {
                     return@publishCurrentPage
                 }
 
@@ -158,7 +170,7 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                     isPageLoading = false
                     currentBinderPage = state.data
                     pageLoadingView.visibility = View.GONE
-                    editorMessageTextView.visibility = View.GONE
+                    renderEditorMessage(editorMessageTextView)
 
                     if (pageTitleEditText.text.toString() != state.data.title) {
                         pageTitleEditText.setText(state.data.title)
@@ -297,6 +309,9 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         val controlsEnabled = !isPageLoading && hasLoadedPage && isEditable
 
         pageTitleEditText.isEnabled = controlsEnabled
+        pageTitleEditText.isFocusable = controlsEnabled
+        pageTitleEditText.isFocusableInTouchMode = controlsEnabled
+        pageTitleEditText.isCursorVisible = controlsEnabled
         setSlotViewsEnabled(controlsEnabled)
 
         clearSelectedSlotButton.isEnabled = controlsEnabled && currentSelectedSlotIndex != null
@@ -333,6 +348,11 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
     }
 
     private fun renderSelectedSlotFeedback(selectedSlotTextView: TextView) {
+        if (!isCurrentPageEditable()) {
+            selectedSlotTextView.text = getString(R.string.binder_editor_read_only)
+            return
+        }
+
         val selectedIndex = currentSelectedSlotIndex
 
         if (selectedIndex == null) {
@@ -353,6 +373,19 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                 getSlotCardDisplayName(slot?.cardId)
             )
         }
+    }
+
+    private fun renderEditorMessage(editorMessageTextView: TextView) {
+        val binderPage = currentBinderPage
+
+        if (isPageLoading || binderPage == null || binderPage.status != BinderPageStatus.PUBLISHED) {
+            editorMessageTextView.visibility = View.GONE
+            editorMessageTextView.text = ""
+            return
+        }
+
+        editorMessageTextView.visibility = View.VISIBLE
+        editorMessageTextView.text = getString(R.string.binder_editor_publish_read_only_message)
     }
 
     private fun renderPublishSection(

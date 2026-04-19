@@ -77,8 +77,18 @@ class FeedAdapter(
                 publishedAtTextView.visibility = View.GONE
             }
 
-            itemView.setOnClickListener {
-                onPageClick(binderPage)
+            val canOpenPage = binderPage.pageId.isNotBlank()
+
+            itemView.isEnabled = canOpenPage
+            itemView.isClickable = canOpenPage
+            itemView.isFocusable = canOpenPage
+
+            if (canOpenPage) {
+                itemView.setOnClickListener {
+                    onPageClick(binderPage)
+                }
+            } else {
+                itemView.setOnClickListener(null)
             }
         }
     }
