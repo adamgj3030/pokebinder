@@ -32,6 +32,40 @@
     <string name="collection_results_label">Results: %1$d</string>
     <string name="remove_from_collection">Remove</string>
 
+    <string name="binder_editor_title">Binder Editor</string>
+    <string name="binder_editor_subtitle">Tap a slot, then tap a saved collection card to place it on the page.</string>
+    <string name="binder_editor_page_title_hint">Binder page title</string>
+    <string name="binder_editor_no_slot_selected">No slot selected.</string>
+    <string name="binder_editor_selected_slot_empty_label">Selected slot: %1$d (Empty)</string>
+    <string name="binder_editor_selected_slot_filled_label">Selected slot: %1$d (%2$s)</string>
+    <string name="binder_editor_slot_label">Slot %1$d
+%2$s</string>
+    <string name="binder_editor_slot_empty">Empty</string>
+    <string name="binder_editor_clear_selected_slot">Clear Selected Slot</string>
+    <string name="binder_editor_save_draft">Save Draft</string>
+    <string name="binder_editor_view_drafts">View Drafts</string>
+    <string name="binder_editor_picker_title">Saved Collection Cards</string>
+    <string name="binder_editor_picker_subtitle">These cards come from your saved collection for this phase.</string>
+    <string name="binder_editor_picker_loading">Loading saved cards...</string>
+    <string name="binder_editor_picker_empty_title">No saved cards available</string>
+    <string name="binder_editor_picker_empty_message">Save cards in My Collection before adding them to a binder page.</string>
+    <string name="binder_editor_picker_error_title">Unable to load saved cards</string>
+    <string name="binder_editor_page_loading">Loading editor...</string>
+    <string name="binder_editor_select_slot_first">Select a slot first.</string>
+    <string name="binder_editor_save_success">Draft saved.</string>
+
+    <string name="drafts_title">My Drafts</string>
+    <string name="drafts_subtitle">Open a saved binder draft and keep editing it.</string>
+    <string name="drafts_loading">Loading drafts...</string>
+    <string name="drafts_empty_title">No drafts yet</string>
+    <string name="drafts_empty_message">Create and save a binder page in the editor to see it here.</string>
+    <string name="drafts_error_title">Unable to load drafts</string>
+    <string name="drafts_results_default">Drafts: 0</string>
+    <string name="drafts_results_label">Drafts: %1$d</string>
+    <string name="drafts_item_untitled">Untitled draft</string>
+    <string name="drafts_item_filled_slots">Filled slots: %1$d/9</string>
+    <string name="drafts_item_updated_at">Last updated: %1$s</string>
+
     <string name="card_types_label">Types: %1$s</string>
     <string name="card_types_placeholder">Types: -</string>
     <string name="pokemon_card_image">Pokémon card image</string>
