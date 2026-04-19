@@ -133,7 +133,7 @@
                     android:padding="8dp"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
-                    tools:text="Slot 4&#10;Empty" />
+                    tools:text="Slot 4&#10;Pikachu" />
 
                 <TextView
                     android:id="@+id/slot5TextView"
@@ -167,7 +167,7 @@
                     android:padding="8dp"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
-                    tools:text="Slot 6&#10;Empty" />
+                    tools:text="Slot 6&#10;Bulbasaur" />
             </LinearLayout>
 
             <LinearLayout
@@ -190,7 +190,7 @@
                     android:padding="8dp"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
-                    tools:text="Slot 7&#10;Empty" />
+                    tools:text="Slot 7&#10;Charmander" />
 
                 <TextView
                     android:id="@+id/slot8TextView"
@@ -252,6 +252,21 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/publishButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/binder_editor_publish" />
+
+        <TextView
+            android:id="@+id/publishStatusTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            tools:text="Fill all 9 slots to publish. Filled: 5/9." />
+
+        <Button
             android:id="@+id/viewDraftsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -284,9 +299,6 @@
                 android:id="@+id/cardPickerRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="8dp"
-                tools:itemCount="4"
                 tools:listitem="@layout/item_binder_picker_card" />
 
             <LinearLayout

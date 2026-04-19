@@ -32,6 +32,18 @@
     <string name="collection_results_label">Results: %1$d</string>
     <string name="remove_from_collection">Remove</string>
 
+    <string name="feed_title">Feed</string>
+    <string name="feed_subtitle">Browse published binder pages.</string>
+    <string name="feed_loading">Loading published pages...</string>
+    <string name="feed_empty_title">No published pages yet</string>
+    <string name="feed_empty_message">Published binder pages will appear here.</string>
+    <string name="feed_error_title">Unable to load feed</string>
+    <string name="feed_results_default">Published pages: 0</string>
+    <string name="feed_results_label">Published pages: %1$d</string>
+    <string name="feed_item_untitled">Untitled page</string>
+    <string name="feed_item_filled_slots">Filled slots: %1$d/9</string>
+    <string name="feed_item_published_at">Published: %1$s</string>
+
     <string name="binder_editor_title">Binder Editor</string>
     <string name="binder_editor_subtitle">Tap a slot, then tap a saved collection card to place it on the page.</string>
     <string name="binder_editor_page_title_hint">Binder page title</string>
@@ -43,6 +55,7 @@
     <string name="binder_editor_slot_empty">Empty</string>
     <string name="binder_editor_clear_selected_slot">Clear Selected Slot</string>
     <string name="binder_editor_save_draft">Save Draft</string>
+    <string name="binder_editor_publish">Publish</string>
     <string name="binder_editor_view_drafts">View Drafts</string>
     <string name="binder_editor_picker_title">Saved Collection Cards</string>
     <string name="binder_editor_picker_subtitle">These cards come from your saved collection for this phase.</string>
@@ -52,7 +65,13 @@
     <string name="binder_editor_picker_error_title">Unable to load saved cards</string>
     <string name="binder_editor_page_loading">Loading editor...</string>
     <string name="binder_editor_select_slot_first">Select a slot first.</string>
+    <string name="binder_editor_read_only">This page is read-only.</string>
     <string name="binder_editor_save_success">Draft saved.</string>
+    <string name="binder_editor_publish_success">Page published.</string>
+    <string name="binder_editor_publish_failure">Unable to publish binder page.</string>
+    <string name="binder_editor_publish_ready_message">Ready to publish.</string>
+    <string name="binder_editor_publish_not_ready_message">Fill all 9 slots to publish. Filled: %1$d/9.</string>
+    <string name="binder_editor_publish_read_only_message">This page has been published and is now read-only.</string>
 
     <string name="drafts_title">My Drafts</string>
     <string name="drafts_subtitle">Open a saved binder draft and keep editing it.</string>
@@ -65,6 +84,22 @@
     <string name="drafts_item_untitled">Untitled draft</string>
     <string name="drafts_item_filled_slots">Filled slots: %1$d/9</string>
     <string name="drafts_item_updated_at">Last updated: %1$s</string>
+
+    <string name="page_detail_title">Published Page</string>
+    <string name="page_detail_untitled">Untitled page</string>
+    <string name="page_detail_read_only_message">This published binder page is read-only.</string>
+    <string name="page_detail_status_published">Status: Published</string>
+    <string name="page_detail_filled_slots">Filled slots: %1$d/9</string>
+    <string name="page_detail_published_at">Published: %1$s</string>
+    <string name="page_detail_grid_title">Binder Grid</string>
+    <string name="page_detail_grid_subtitle">Card names and set names are resolved from the imported local dataset.</string>
+    <string name="page_detail_slot_label">Slot %1$d
+%2$s</string>
+    <string name="page_detail_slot_empty">Empty</string>
+    <string name="page_detail_slot_card_info">%1$s
+%2$s</string>
+    <string name="page_detail_loading">Loading page...</string>
+    <string name="page_detail_empty_message">Published page not found.</string>
 
     <string name="card_types_label">Types: %1$s</string>
     <string name="card_types_placeholder">Types: -</string>

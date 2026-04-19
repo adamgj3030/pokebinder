@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
+import com.adamjohnson.pokebinder.data.model.BinderPageStatus
 import com.adamjohnson.pokebinder.data.model.BinderSlot
 import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
@@ -27,17 +28,18 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     private var hasInitialized = false
     private var initializedPageId: String? = null
 
-    private val _binderPageState = MutableLiveData<UiState<BinderPage>>(
-        UiState.Success(BinderPage())
-    )
+    private val _binderPageState = MutableLiveData<UiState<BinderPage>>(UiState.Loading)
     val binderPageState: LiveData<UiState<BinderPage>> = _binderPageState
 
     private val _availableCardsState =
-        MutableLiveData<UiState<List<PokemonCard>>>(UiState.Success(emptyList()))
+        MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
     val availableCardsState: LiveData<UiState<List<PokemonCard>>> = _availableCardsState
 
     private val _selectedSlotIndex = MutableLiveData<Int?>(null)
     val selectedSlotIndex: LiveData<Int?> = _selectedSlotIndex
+
+    private val _canPublish = MutableLiveData(false)
+    val canPublish: LiveData<Boolean> = _canPublish
 
     fun initializeEditor(pageId: String?) {
         val normalizedPageId = pageId?.trim()?.takeIf { it.isNotBlank() }
@@ -67,6 +69,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         if (userId.isNullOrBlank()) {
             currentBinderPage = BinderPage()
             _selectedSlotIndex.value = null
+            updateCanPublish()
 
             val errorMessage = "You must be signed in to create a binder draft."
             _binderPageState.value = UiState.Error(errorMessage)
@@ -82,6 +85,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         initializedPageId = null
         currentBinderPage = newBinderPage
         _selectedSlotIndex.value = null
+        updateCanPublish()
         _binderPageState.value = UiState.Success(newBinderPage)
 
         onResult(newBinderPage, null)
@@ -96,6 +100,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         if (userId.isNullOrBlank()) {
             currentBinderPage = BinderPage()
             _selectedSlotIndex.value = null
+            updateCanPublish()
 
             val errorMessage = "You must be signed in to view a binder draft."
             _binderPageState.value = UiState.Error(errorMessage)
@@ -106,6 +111,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         if (pageId.isBlank()) {
             currentBinderPage = BinderPage()
             _selectedSlotIndex.value = null
+            updateCanPublish()
 
             val errorMessage = "Invalid page."
             _binderPageState.value = UiState.Error(errorMessage)
@@ -120,10 +126,12 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             if (binderPage != null) {
                 currentBinderPage = binderPage
                 initializedPageId = binderPage.pageId.takeIf { it.isNotBlank() }
+                updateCanPublish()
                 _binderPageState.postValue(UiState.Success(binderPage))
             } else {
                 currentBinderPage = BinderPage()
                 _selectedSlotIndex.postValue(null)
+                updateCanPublish()
                 _binderPageState.postValue(
                     UiState.Error(errorMessage ?: "Unable to load draft page.")
                 )
@@ -134,12 +142,20 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun updateTitle(title: String) {
+        if (!isCurrentPageEditable()) {
+            return
+        }
+
         updateCurrentBinderPage(
             currentBinderPage.copy(title = title)
         )
     }
 
     fun selectSlot(slotIndex: Int) {
+        if (!isCurrentPageEditable()) {
+            return
+        }
+
         if (slotIndex !in 0 until SLOT_COUNT) {
             return
         }
@@ -148,6 +164,10 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun assignCardToSelectedSlot(cardId: String) {
+        if (!isCurrentPageEditable()) {
+            return
+        }
+
         val trimmedCardId = cardId.trim()
 
         if (trimmedCardId.isBlank()) {
@@ -167,12 +187,23 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun clearSelectedSlot() {
+        if (!isCurrentPageEditable()) {
+            return
+        }
+
         updateSelectedSlotCard(null)
     }
 
     fun saveCurrentDraft(
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
+        if (!isCurrentPageEditable()) {
+            val errorMessage = "Published pages are read-only."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
         val userId = authRepository.getCurrentUserId()
 
         if (userId.isNullOrBlank()) {
@@ -188,6 +219,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             if (savedBinderPage != null) {
                 currentBinderPage = savedBinderPage
                 initializedPageId = savedBinderPage.pageId.takeIf { it.isNotBlank() }
+                updateCanPublish()
                 _binderPageState.postValue(UiState.Success(savedBinderPage))
             } else {
                 _binderPageState.postValue(
@@ -196,6 +228,55 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             }
 
             onResult(savedBinderPage, errorMessage)
+        }
+    }
+
+    fun canPublishCurrentPage(): Boolean {
+        return calculateCanPublish(currentBinderPage)
+    }
+
+    fun publishCurrentPage(
+        onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
+    ) {
+        if (!isCurrentPageEditable()) {
+            val errorMessage = "Published pages are read-only."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId.isNullOrBlank()) {
+            val errorMessage = "You must be signed in to publish a binder page."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
+        if (!canPublishCurrentPage()) {
+            val errorMessage = "All 9 slots must be filled before publishing."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
+            return
+        }
+
+        _binderPageState.value = UiState.Loading
+
+        binderPageRepository.publishPage(userId, currentBinderPage) { publishedBinderPage, errorMessage ->
+            if (publishedBinderPage != null) {
+                currentBinderPage = publishedBinderPage
+                initializedPageId = null
+                _selectedSlotIndex.postValue(null)
+                updateCanPublish()
+                _binderPageState.postValue(UiState.Success(publishedBinderPage))
+            } else {
+                _binderPageState.postValue(
+                    UiState.Error(errorMessage ?: "Unable to publish binder page.")
+                )
+            }
+
+            onResult(publishedBinderPage, errorMessage)
         }
     }
 
@@ -255,7 +336,24 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
     private fun updateCurrentBinderPage(updatedBinderPage: BinderPage) {
         currentBinderPage = updatedBinderPage
+        updateCanPublish()
         _binderPageState.value = UiState.Success(updatedBinderPage)
+    }
+
+    private fun updateCanPublish() {
+        _canPublish.value = calculateCanPublish(currentBinderPage)
+    }
+
+    private fun calculateCanPublish(binderPage: BinderPage): Boolean {
+        return binderPage.status == BinderPageStatus.DRAFT &&
+                binderPage.slots.size == SLOT_COUNT &&
+                binderPage.slots.all { slot ->
+                    !slot.cardId.isNullOrBlank()
+                }
+    }
+
+    private fun isCurrentPageEditable(): Boolean {
+        return currentBinderPage.status == BinderPageStatus.DRAFT
     }
 
     companion object {

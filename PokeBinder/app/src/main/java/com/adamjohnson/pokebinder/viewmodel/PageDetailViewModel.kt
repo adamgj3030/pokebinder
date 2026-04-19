@@ -4,27 +4,40 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.adamjohnson.pokebinder.data.model.BinderPage
-import com.adamjohnson.pokebinder.data.model.Comment
-import com.adamjohnson.pokebinder.data.repository.SocialRepository
+import com.adamjohnson.pokebinder.data.repository.BinderPageRepository
 import com.adamjohnson.pokebinder.utils.UiState
 
 class PageDetailViewModel : ViewModel() {
 
-    private val socialRepository = SocialRepository()
+    private val binderPageRepository = BinderPageRepository()
+    private var loadedPageId: String? = null
 
-    private val _pageState = MutableLiveData<UiState<BinderPage?>>(UiState.Success(null))
-    val pageState: LiveData<UiState<BinderPage?>> = _pageState
+    private val _pageState = MutableLiveData<UiState<BinderPage>>(UiState.Loading)
+    val pageState: LiveData<UiState<BinderPage>> = _pageState
 
-    private val _commentsState =
-        MutableLiveData<UiState<List<Comment>>>(UiState.Success(emptyList()))
-    val commentsState: LiveData<UiState<List<Comment>>> = _commentsState
+    fun loadPage(pageId: String) {
+        val normalizedPageId = pageId.trim()
 
-    fun setPage(page: BinderPage?) {
-        _pageState.value = UiState.Success(page)
-    }
+        if (normalizedPageId.isBlank()) {
+            _pageState.value = UiState.Error("Invalid page.")
+            return
+        }
 
-    fun loadComments(pageId: String) {
-        _commentsState.value = UiState.Loading
-        _commentsState.value = UiState.Success(socialRepository.getComments(pageId))
+        if (loadedPageId == normalizedPageId && _pageState.value is UiState.Success<*>) {
+            return
+        }
+
+        loadedPageId = normalizedPageId
+        _pageState.value = UiState.Loading
+
+        binderPageRepository.getPublishedPage(normalizedPageId) { binderPage, errorMessage ->
+            if (binderPage != null) {
+                _pageState.postValue(UiState.Success(binderPage))
+            } else {
+                _pageState.postValue(
+                    UiState.Error(errorMessage ?: "Unable to load published page.")
+                )
+            }
+        }
     }
 }

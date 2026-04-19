@@ -1,13 +1,284 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ScrollView
+        android:id="@+id/contentScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/screenTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/page_detail_title"
+                android:textAppearance="?attr/textAppearanceTitleLarge" />
+
+            <TextView
+                android:id="@+id/pageTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textStyle="bold"
+                tools:text="Grass Favorites" />
+
+            <TextView
+                android:id="@+id/readOnlyMessageTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/page_detail_read_only_message"
+                android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+            <TextView
+                android:id="@+id/pageStatusTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                tools:text="Status: Published" />
+
+            <TextView
+                android:id="@+id/filledSlotsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                tools:text="Filled slots: 9/9" />
+
+            <TextView
+                android:id="@+id/publishedAtTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                tools:text="Published: Apr 19, 2026, 2:15 PM" />
+
+            <TextView
+                android:id="@+id/gridTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/page_detail_grid_title"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <TextView
+                android:id="@+id/gridSubtitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/page_detail_grid_subtitle"
+                android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/slot1TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 1&#10;Bulbasaur&#10;Base Set" />
+
+                    <TextView
+                        android:id="@+id/slot2TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 2&#10;Pikachu&#10;Base Set" />
+
+                    <TextView
+                        android:id="@+id/slot3TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 3&#10;Abra&#10;151" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/slot4TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 4&#10;Snorlax&#10;Jungle" />
+
+                    <TextView
+                        android:id="@+id/slot5TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 5&#10;Mew&#10;Celebrations" />
+
+                    <TextView
+                        android:id="@+id/slot6TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 6&#10;Gengar&#10;Fossil" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/slot7TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 7&#10;Eevee&#10;Base Set" />
+
+                    <TextView
+                        android:id="@+id/slot8TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 8&#10;Dragonite&#10;Fossil" />
+
+                    <TextView
+                        android:id="@+id/slot9TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="112dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:padding="6dp"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@android:color/white"
+                        tools:text="Slot 9&#10;Charizard&#10;Base Set" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/pageMessageTextView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Page Detail Screen"
-        android:textSize="24sp" />
+        android:gravity="center"
+        android:padding="24dp"
+        android:text="@string/page_detail_empty_message"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:visibility="gone"
+        tools:text="Published page not found."
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/loadingView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/page_detail_loading"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
 </FrameLayout>

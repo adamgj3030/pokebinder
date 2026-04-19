@@ -6,15 +6,19 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.BinderPage
+import com.adamjohnson.pokebinder.data.model.BinderPageStatus
 import com.adamjohnson.pokebinder.data.model.PokemonCard
+import com.adamjohnson.pokebinder.ui.detail.PageDetailFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.BinderEditorViewModel
 
@@ -28,6 +32,7 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
     private var currentBinderPage: BinderPage? = null
     private var currentAvailableCards: List<PokemonCard> = emptyList()
     private var currentSelectedSlotIndex: Int? = null
+    private var currentCanPublish = false
     private var isPageLoading = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -38,6 +43,8 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         val editorMessageTextView: TextView = view.findViewById(R.id.editorMessageTextView)
         val clearSelectedSlotButton: Button = view.findViewById(R.id.clearSelectedSlotButton)
         val saveDraftButton: Button = view.findViewById(R.id.saveDraftButton)
+        val publishButton: Button = view.findViewById(R.id.publishButton)
+        val publishStatusTextView: TextView = view.findViewById(R.id.publishStatusTextView)
         val viewDraftsButton: Button = view.findViewById(R.id.viewDraftsButton)
         val cardPickerRecyclerView: RecyclerView = view.findViewById(R.id.cardPickerRecyclerView)
         val cardPickerLoadingView: View = view.findViewById(R.id.cardPickerLoadingView)
@@ -61,7 +68,9 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         )
 
         cardPickerAdapter = BinderCardPickerAdapter { card ->
-            if (currentSelectedSlotIndex == null) {
+            if (!isCurrentPageEditable()) {
+                showShortToast(getString(R.string.binder_editor_read_only))
+            } else if (currentSelectedSlotIndex == null) {
                 showShortToast(getString(R.string.binder_editor_select_slot_first))
             } else {
                 binderEditorViewModel.assignCardToSelectedSlot(card.cardId)
@@ -105,6 +114,22 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
             }
         }
 
+        publishButton.setOnClickListener {
+            binderEditorViewModel.publishCurrentPage { publishedBinderPage, errorMessage ->
+                if (!isAdded) {
+                    return@publishCurrentPage
+                }
+
+                if (publishedBinderPage != null && publishedBinderPage.pageId.isNotBlank()) {
+                    showShortToast(getString(R.string.binder_editor_publish_success))
+                    openPublishedPage(publishedBinderPage.pageId)
+                } else {
+                    val message = errorMessage ?: getString(R.string.binder_editor_publish_failure)
+                    showShortToast(message)
+                }
+            }
+        }
+
         viewDraftsButton.setOnClickListener {
             if (findNavController().currentDestination?.id == R.id.binderEditorFragment) {
                 findNavController().navigate(R.id.draftsFragment)
@@ -121,7 +146,11 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                         pageTitleEditText = pageTitleEditText,
                         clearSelectedSlotButton = clearSelectedSlotButton,
                         saveDraftButton = saveDraftButton,
+                        publishButton = publishButton,
                         viewDraftsButton = viewDraftsButton
+                    )
+                    renderPublishSection(
+                        publishStatusTextView = publishStatusTextView
                     )
                 }
 
@@ -142,7 +171,11 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                         pageTitleEditText = pageTitleEditText,
                         clearSelectedSlotButton = clearSelectedSlotButton,
                         saveDraftButton = saveDraftButton,
+                        publishButton = publishButton,
                         viewDraftsButton = viewDraftsButton
+                    )
+                    renderPublishSection(
+                        publishStatusTextView = publishStatusTextView
                     )
                 }
 
@@ -158,7 +191,11 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                         pageTitleEditText = pageTitleEditText,
                         clearSelectedSlotButton = clearSelectedSlotButton,
                         saveDraftButton = saveDraftButton,
+                        publishButton = publishButton,
                         viewDraftsButton = viewDraftsButton
+                    )
+                    renderPublishSection(
+                        publishStatusTextView = publishStatusTextView
                     )
                 }
             }
@@ -212,7 +249,22 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                 pageTitleEditText = pageTitleEditText,
                 clearSelectedSlotButton = clearSelectedSlotButton,
                 saveDraftButton = saveDraftButton,
+                publishButton = publishButton,
                 viewDraftsButton = viewDraftsButton
+            )
+        }
+
+        binderEditorViewModel.canPublish.observe(viewLifecycleOwner) { canPublish ->
+            currentCanPublish = canPublish
+            renderEditorControls(
+                pageTitleEditText = pageTitleEditText,
+                clearSelectedSlotButton = clearSelectedSlotButton,
+                saveDraftButton = saveDraftButton,
+                publishButton = publishButton,
+                viewDraftsButton = viewDraftsButton
+            )
+            renderPublishSection(
+                publishStatusTextView = publishStatusTextView
             )
         }
 
@@ -222,7 +274,11 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
             pageTitleEditText = pageTitleEditText,
             clearSelectedSlotButton = clearSelectedSlotButton,
             saveDraftButton = saveDraftButton,
+            publishButton = publishButton,
             viewDraftsButton = viewDraftsButton
+        )
+        renderPublishSection(
+            publishStatusTextView = publishStatusTextView
         )
 
         val pageId = arguments?.getString(ARG_PAGE_ID)
@@ -233,16 +289,19 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         pageTitleEditText: EditText,
         clearSelectedSlotButton: Button,
         saveDraftButton: Button,
+        publishButton: Button,
         viewDraftsButton: Button
     ) {
-        val hasLoadedPage = !currentBinderPage?.pageId.isNullOrBlank()
-        val controlsEnabled = !isPageLoading && hasLoadedPage
+        val hasLoadedPage = currentBinderPage != null
+        val isEditable = isCurrentPageEditable()
+        val controlsEnabled = !isPageLoading && hasLoadedPage && isEditable
 
         pageTitleEditText.isEnabled = controlsEnabled
         setSlotViewsEnabled(controlsEnabled)
 
         clearSelectedSlotButton.isEnabled = controlsEnabled && currentSelectedSlotIndex != null
         saveDraftButton.isEnabled = controlsEnabled
+        publishButton.isEnabled = controlsEnabled && currentCanPublish
         viewDraftsButton.isEnabled = !isPageLoading
     }
 
@@ -265,7 +324,7 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
 
             slotView.text = getString(R.string.binder_editor_slot_label, index + 1, cardText)
 
-            if (currentSelectedSlotIndex == index) {
+            if (currentSelectedSlotIndex == index && isCurrentPageEditable()) {
                 slotView.setBackgroundResource(android.R.color.holo_blue_light)
             } else {
                 slotView.setBackgroundResource(android.R.color.darker_gray)
@@ -294,6 +353,49 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
                 getSlotCardDisplayName(slot?.cardId)
             )
         }
+    }
+
+    private fun renderPublishSection(
+        publishStatusTextView: TextView
+    ) {
+        val binderPage = currentBinderPage
+
+        if (isPageLoading || binderPage == null) {
+            publishStatusTextView.visibility = View.GONE
+            publishStatusTextView.text = ""
+            return
+        }
+
+        publishStatusTextView.visibility = View.VISIBLE
+
+        when {
+            binderPage.status == BinderPageStatus.PUBLISHED -> {
+                publishStatusTextView.text =
+                    getString(R.string.binder_editor_publish_read_only_message)
+            }
+
+            currentCanPublish -> {
+                publishStatusTextView.text =
+                    getString(R.string.binder_editor_publish_ready_message)
+            }
+
+            else -> {
+                publishStatusTextView.text = getString(
+                    R.string.binder_editor_publish_not_ready_message,
+                    getFilledSlotCount(binderPage)
+                )
+            }
+        }
+    }
+
+    private fun getFilledSlotCount(binderPage: BinderPage): Int {
+        return binderPage.slots.count { slot ->
+            !slot.cardId.isNullOrBlank()
+        }
+    }
+
+    private fun isCurrentPageEditable(): Boolean {
+        return currentBinderPage?.status == BinderPageStatus.DRAFT
     }
 
     private fun getSlotCardDisplayName(cardId: String?): String {
@@ -355,6 +457,22 @@ class BinderEditorFragment : Fragment(R.layout.fragment_binder_editor) {
         cardPickerEmptyTitleTextView.text =
             getString(R.string.binder_editor_picker_error_title)
         cardPickerEmptyMessageTextView.text = message
+    }
+
+    private fun openPublishedPage(pageId: String) {
+        if (findNavController().currentDestination?.id != R.id.binderEditorFragment) {
+            return
+        }
+
+        val navOptions = NavOptions.Builder()
+            .setPopUpTo(R.id.binderEditorFragment, true)
+            .build()
+
+        findNavController().navigate(
+            R.id.pageDetailFragment,
+            bundleOf(PageDetailFragment.ARG_PAGE_ID to pageId),
+            navOptions
+        )
     }
 
     private fun showShortToast(message: String) {

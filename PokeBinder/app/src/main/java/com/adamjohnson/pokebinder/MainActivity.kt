@@ -2,11 +2,13 @@ package com.adamjohnson.pokebinder
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
+import com.adamjohnson.pokebinder.ui.binder.BinderEditorFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -35,9 +37,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.binderEditorFragment -> {
-                    if (navController.currentDestination?.id != R.id.binderEditorFragment) {
-                        navController.navigate(R.id.binderEditorFragment)
-                    }
+                    openBlankBinderEditor(navController)
                     true
                 }
 
@@ -78,6 +78,18 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         navController.navigate(destinationId, null, navOptions)
+    }
+
+    private fun openBlankBinderEditor(navController: NavController) {
+        val navOptions = NavOptions.Builder()
+            .setLaunchSingleTop(true)
+            .build()
+
+        navController.navigate(
+            R.id.binderEditorFragment,
+            bundleOf(BinderEditorFragment.ARG_PAGE_ID to null),
+            navOptions
+        )
     }
 
     private fun enforceAuthEntryDestination(navController: NavController) {

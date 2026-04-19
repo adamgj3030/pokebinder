@@ -19,6 +19,16 @@ class FeedViewModel : ViewModel() {
     }
 
     fun loadFeedPages() {
-        _feedState.value = UiState.Success(binderPageRepository.getPublishedPages())
+        _feedState.value = UiState.Loading
+
+        binderPageRepository.getPublishedPages { publishedPages, errorMessage ->
+            if (publishedPages != null) {
+                _feedState.postValue(UiState.Success(publishedPages))
+            } else {
+                _feedState.postValue(
+                    UiState.Error(errorMessage ?: "Unable to load published pages.")
+                )
+            }
+        }
     }
 }
