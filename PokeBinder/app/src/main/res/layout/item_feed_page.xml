@@ -28,6 +28,14 @@
         tools:text="Filled slots: 9/9" />
 
     <TextView
+        android:id="@+id/socialInfoTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        tools:text="Likes: 3 • Comments: 2" />
+
+    <TextView
         android:id="@+id/publishedAtTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

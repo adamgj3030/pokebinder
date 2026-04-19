@@ -2,12 +2,18 @@ package com.adamjohnson.pokebinder.ui.detail
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
+import com.adamjohnson.pokebinder.data.model.Comment
 import com.adamjohnson.pokebinder.data.repository.CardRepository
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.PageDetailViewModel
@@ -23,17 +29,45 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
     }
 
     private lateinit var slotViews: List<TextView>
+    private lateinit var commentsAdapter: CommentsAdapter
+
+    private lateinit var contentScrollView: View
+    private lateinit var pageTitleTextView: TextView
+    private lateinit var pageStatusTextView: TextView
+    private lateinit var filledSlotsTextView: TextView
+    private lateinit var publishedAtTextView: TextView
+    private lateinit var likeCountTextView: TextView
+    private lateinit var commentCountTextView: TextView
+    private lateinit var likeButton: Button
+    private lateinit var commentEditText: EditText
+    private lateinit var submitCommentButton: Button
+    private lateinit var commentSubmissionMessageTextView: TextView
+    private lateinit var commentsRecyclerView: RecyclerView
+    private lateinit var commentsLoadingView: View
+    private lateinit var commentsMessageTextView: TextView
+    private lateinit var pageMessageTextView: TextView
+    private lateinit var loadingView: View
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val contentScrollView: View = view.findViewById(R.id.contentScrollView)
-        val pageTitleTextView: TextView = view.findViewById(R.id.pageTitleTextView)
-        val pageStatusTextView: TextView = view.findViewById(R.id.pageStatusTextView)
-        val filledSlotsTextView: TextView = view.findViewById(R.id.filledSlotsTextView)
-        val publishedAtTextView: TextView = view.findViewById(R.id.publishedAtTextView)
-        val pageMessageTextView: TextView = view.findViewById(R.id.pageMessageTextView)
-        val loadingView: View = view.findViewById(R.id.loadingView)
+        contentScrollView = view.findViewById(R.id.contentScrollView)
+        pageTitleTextView = view.findViewById(R.id.pageTitleTextView)
+        pageStatusTextView = view.findViewById(R.id.pageStatusTextView)
+        filledSlotsTextView = view.findViewById(R.id.filledSlotsTextView)
+        publishedAtTextView = view.findViewById(R.id.publishedAtTextView)
+        likeCountTextView = view.findViewById(R.id.likeCountTextView)
+        commentCountTextView = view.findViewById(R.id.commentCountTextView)
+        likeButton = view.findViewById(R.id.likeButton)
+        commentEditText = view.findViewById(R.id.commentEditText)
+        submitCommentButton = view.findViewById(R.id.submitCommentButton)
+        commentSubmissionMessageTextView =
+            view.findViewById(R.id.commentSubmissionMessageTextView)
+        commentsRecyclerView = view.findViewById(R.id.commentsRecyclerView)
+        commentsLoadingView = view.findViewById(R.id.commentsLoadingView)
+        commentsMessageTextView = view.findViewById(R.id.commentsMessageTextView)
+        pageMessageTextView = view.findViewById(R.id.pageMessageTextView)
+        loadingView = view.findViewById(R.id.loadingView)
 
         slotViews = listOf(
             view.findViewById(R.id.slot1TextView),
@@ -47,37 +81,58 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             view.findViewById(R.id.slot9TextView)
         )
 
+        commentsAdapter = CommentsAdapter()
+        commentsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        commentsRecyclerView.adapter = commentsAdapter
+
+        likeButton.setOnClickListener {
+            pageDetailViewModel.toggleLike()
+        }
+
+        submitCommentButton.setOnClickListener {
+            val commentText = commentEditText.text.toString()
+
+            if (commentText.isBlank()) {
+                commentEditText.error = getString(R.string.page_detail_comment_required)
+                return@setOnClickListener
+            }
+
+            commentEditText.error = null
+            pageDetailViewModel.submitComment(commentText)
+        }
+
         pageDetailViewModel.pageState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                UiState.Loading -> {
-                    renderLoading(
-                        contentScrollView = contentScrollView,
-                        pageMessageTextView = pageMessageTextView,
-                        loadingView = loadingView
-                    )
-                }
+                UiState.Loading -> renderLoading()
+                is UiState.Success -> renderSuccess(state.data)
+                is UiState.Error -> renderError(state.message)
+            }
+        }
 
-                is UiState.Success -> {
-                    renderSuccess(
-                        binderPage = state.data,
-                        contentScrollView = contentScrollView,
-                        pageTitleTextView = pageTitleTextView,
-                        pageStatusTextView = pageStatusTextView,
-                        filledSlotsTextView = filledSlotsTextView,
-                        publishedAtTextView = publishedAtTextView,
-                        pageMessageTextView = pageMessageTextView,
-                        loadingView = loadingView
-                    )
-                }
+        pageDetailViewModel.commentsState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                UiState.Loading -> renderCommentsLoading()
+                is UiState.Success -> renderCommentsSuccess(state.data)
+                is UiState.Error -> renderCommentsError(state.message)
+            }
+        }
 
-                is UiState.Error -> {
-                    renderError(
-                        message = state.message,
-                        contentScrollView = contentScrollView,
-                        pageMessageTextView = pageMessageTextView,
-                        loadingView = loadingView
-                    )
-                }
+        pageDetailViewModel.isLiked.observe(viewLifecycleOwner) {
+            renderLikeButton()
+        }
+
+        pageDetailViewModel.isLikeLoading.observe(viewLifecycleOwner) {
+            renderLikeButton()
+        }
+
+        pageDetailViewModel.commentSubmissionState.observe(viewLifecycleOwner) { state ->
+            renderCommentSubmissionState(state)
+        }
+
+        pageDetailViewModel.socialMessage.observe(viewLifecycleOwner) { message ->
+            if (!message.isNullOrBlank()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                pageDetailViewModel.clearSocialMessage()
             }
         }
 
@@ -85,26 +140,13 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         pageDetailViewModel.loadPage(pageId)
     }
 
-    private fun renderLoading(
-        contentScrollView: View,
-        pageMessageTextView: TextView,
-        loadingView: View
-    ) {
+    private fun renderLoading() {
         contentScrollView.visibility = View.GONE
         pageMessageTextView.visibility = View.GONE
         loadingView.visibility = View.VISIBLE
     }
 
-    private fun renderSuccess(
-        binderPage: BinderPage,
-        contentScrollView: View,
-        pageTitleTextView: TextView,
-        pageStatusTextView: TextView,
-        filledSlotsTextView: TextView,
-        publishedAtTextView: TextView,
-        pageMessageTextView: TextView,
-        loadingView: View
-    ) {
+    private fun renderSuccess(binderPage: BinderPage) {
         loadingView.visibility = View.GONE
         contentScrollView.visibility = View.VISIBLE
         pageMessageTextView.visibility = View.GONE
@@ -117,6 +159,15 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         filledSlotsTextView.text = getString(
             R.string.page_detail_filled_slots,
             getFilledSlotCount(binderPage)
+        )
+
+        likeCountTextView.text = getString(
+            R.string.page_detail_like_count,
+            binderPage.likeCount
+        )
+        commentCountTextView.text = getString(
+            R.string.page_detail_comment_count,
+            binderPage.commentCount
         )
 
         val publishedAt = binderPage.publishedAt ?: 0L
@@ -137,19 +188,97 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         }
 
         renderSlotViews(binderPage)
+        renderLikeButton()
     }
 
-    private fun renderError(
-        message: String,
-        contentScrollView: View,
-        pageMessageTextView: TextView,
-        loadingView: View
-    ) {
+    private fun renderError(message: String) {
         loadingView.visibility = View.GONE
         contentScrollView.visibility = View.GONE
         pageMessageTextView.text = message
         pageMessageTextView.visibility = View.VISIBLE
         renderSlotViews(null)
+    }
+
+    private fun renderCommentsLoading() {
+        commentsLoadingView.visibility = View.VISIBLE
+        commentsMessageTextView.visibility = View.GONE
+        commentsRecyclerView.visibility = View.GONE
+    }
+
+    private fun renderCommentsSuccess(comments: List<Comment>) {
+        commentsLoadingView.visibility = View.GONE
+
+        if (comments.isEmpty()) {
+            commentsAdapter.submitList(emptyList())
+            commentsRecyclerView.visibility = View.GONE
+            commentsMessageTextView.text = getString(R.string.page_detail_comments_empty_message)
+            commentsMessageTextView.visibility = View.VISIBLE
+        } else {
+            commentsAdapter.submitList(comments)
+            commentsRecyclerView.visibility = View.VISIBLE
+            commentsMessageTextView.visibility = View.GONE
+        }
+    }
+
+    private fun renderCommentsError(message: String) {
+        commentsLoadingView.visibility = View.GONE
+        commentsAdapter.submitList(emptyList())
+        commentsRecyclerView.visibility = View.GONE
+        commentsMessageTextView.text = message
+        commentsMessageTextView.visibility = View.VISIBLE
+    }
+
+    private fun renderLikeButton() {
+        val isLiked = pageDetailViewModel.isLiked.value == true
+        val isLikeLoading = pageDetailViewModel.isLikeLoading.value == true
+
+        likeButton.text = when {
+            isLikeLoading -> getString(R.string.page_detail_like_loading)
+            isLiked -> getString(R.string.page_detail_unlike)
+            else -> getString(R.string.page_detail_like)
+        }
+
+        likeButton.isEnabled = !isLikeLoading &&
+                contentScrollView.visibility == View.VISIBLE &&
+                pageDetailViewModel.isUserSignedIn()
+    }
+
+    private fun renderCommentSubmissionState(state: UiState<Comment>?) {
+        when (state) {
+            null -> {
+                commentSubmissionMessageTextView.visibility = View.GONE
+                commentEditText.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.text = getString(R.string.page_detail_submit_comment)
+            }
+
+            UiState.Loading -> {
+                commentSubmissionMessageTextView.text =
+                    getString(R.string.page_detail_comment_submit_loading)
+                commentSubmissionMessageTextView.visibility = View.VISIBLE
+                commentEditText.isEnabled = false
+                submitCommentButton.isEnabled = false
+                submitCommentButton.text = getString(R.string.page_detail_comment_submit_loading)
+            }
+
+            is UiState.Success -> {
+                commentSubmissionMessageTextView.text =
+                    getString(R.string.page_detail_comment_submit_success)
+                commentSubmissionMessageTextView.visibility = View.VISIBLE
+                commentEditText.setText("")
+                commentEditText.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.text = getString(R.string.page_detail_submit_comment)
+            }
+
+            is UiState.Error -> {
+                commentSubmissionMessageTextView.text = state.message
+                commentSubmissionMessageTextView.visibility = View.VISIBLE
+                commentEditText.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.isEnabled = pageDetailViewModel.isUserSignedIn()
+                submitCommentButton.text = getString(R.string.page_detail_submit_comment)
+            }
+        }
     }
 
     private fun renderSlotViews(binderPage: BinderPage?) {

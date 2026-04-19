@@ -227,6 +227,33 @@ class BinderPageRepository(
             }
     }
 
+    fun getPublishedPagesForUser(
+        userId: String,
+        onResult: (List<BinderPage>?, String?) -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onResult(null, "Invalid user.")
+            return
+        }
+
+        publishedPagesCollection()
+            .whereEqualTo(FIELD_OWNER_USER_ID, userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val publishedPages = snapshot.documents.map { document ->
+                    documentToPublishedPage(document)
+                }.sortedByDescending { it.publishedAt ?: 0L }
+
+                onResult(publishedPages, null)
+            }
+            .addOnFailureListener { exception ->
+                onResult(
+                    null,
+                    exception.localizedMessage ?: "Unable to load published pages."
+                )
+            }
+    }
+
     private fun draftPagesCollection(userId: String) =
         firestore.collection(USERS_COLLECTION)
             .document(userId)

@@ -40,6 +40,7 @@ class FeedAdapter(
 
         private val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
         private val filledSlotsTextView: TextView = itemView.findViewById(R.id.filledSlotsTextView)
+        private val socialInfoTextView: TextView = itemView.findViewById(R.id.socialInfoTextView)
         private val publishedAtTextView: TextView = itemView.findViewById(R.id.publishedAtTextView)
 
         fun bind(binderPage: BinderPage, onPageClick: (BinderPage) -> Unit) {
@@ -53,6 +54,11 @@ class FeedAdapter(
             filledSlotsTextView.text = context.getString(
                 R.string.feed_item_filled_slots,
                 filledSlotCount
+            )
+            socialInfoTextView.text = context.getString(
+                R.string.feed_item_social_summary,
+                binderPage.likeCount,
+                binderPage.commentCount
             )
 
             if ((binderPage.publishedAt ?: 0L) > 0L) {
