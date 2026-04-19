@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -20,6 +21,9 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
 
     private lateinit var cardSearchAdapter: CardSearchAdapter
 
+    private var currentCards: List<PokemonCard> = emptyList()
+    private var currentSavedCardIds: Set<String> = emptySet()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -31,7 +35,15 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         val emptyTitleTextView: TextView = view.findViewById(R.id.emptyTitleTextView)
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
-        cardSearchAdapter = CardSearchAdapter()
+        cardSearchAdapter = CardSearchAdapter(
+            onSaveClick = { card ->
+                cardSearchViewModel.saveCard(card.cardId) { errorMessage ->
+                    if (errorMessage != null && isAdded) {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
 
         cardResultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         cardResultsRecyclerView.adapter = cardSearchAdapter
@@ -48,6 +60,11 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
                 searchEditText.setText(query)
                 searchEditText.setSelection(query.length)
             }
+        }
+
+        cardSearchViewModel.savedCardIds.observe(viewLifecycleOwner) { savedCardIds ->
+            currentSavedCardIds = savedCardIds
+            cardSearchAdapter.submitList(currentCards, currentSavedCardIds)
         }
 
         cardSearchViewModel.cardsState.observe(viewLifecycleOwner) { state ->
@@ -88,6 +105,11 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        cardSearchViewModel.loadSavedCardIds()
+    }
+
     private fun renderLoading(
         resultCountTextView: TextView,
         cardResultsRecyclerView: RecyclerView,
@@ -109,7 +131,8 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         emptyTitleTextView: TextView,
         emptyMessageTextView: TextView
     ) {
-        cardSearchAdapter.submitList(cards)
+        currentCards = cards
+        cardSearchAdapter.submitList(cards, currentSavedCardIds)
         resultCountTextView.text = getString(R.string.card_search_results_label, cards.size)
         loadingView.visibility = View.GONE
 
@@ -133,7 +156,8 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         emptyTitleTextView: TextView,
         emptyMessageTextView: TextView
     ) {
-        cardSearchAdapter.submitList(emptyList())
+        currentCards = emptyList()
+        cardSearchAdapter.submitList(emptyList(), currentSavedCardIds)
         resultCountTextView.text = getString(R.string.card_search_results_default)
         cardResultsRecyclerView.visibility = View.GONE
         loadingView.visibility = View.GONE

@@ -3,6 +3,7 @@ package com.adamjohnson.pokebinder.ui.cardsearch
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -11,14 +12,20 @@ import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.bumptech.glide.Glide
 
 class CardSearchAdapter(
+    private val onSaveClick: (PokemonCard) -> Unit,
     private val onCardClick: ((PokemonCard) -> Unit)? = null
 ) : RecyclerView.Adapter<CardSearchAdapter.CardViewHolder>() {
 
     private val cards = mutableListOf<PokemonCard>()
+    private var savedCardIds = emptySet<String>()
 
-    fun submitList(newCards: List<PokemonCard>) {
+    fun submitList(
+        newCards: List<PokemonCard>,
+        newSavedCardIds: Set<String>
+    ) {
         cards.clear()
         cards.addAll(newCards)
+        savedCardIds = newSavedCardIds
         notifyDataSetChanged()
     }
 
@@ -29,7 +36,9 @@ class CardSearchAdapter(
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        holder.bind(cards[position], onCardClick)
+        val card = cards[position]
+        val isSaved = savedCardIds.contains(card.cardId)
+        holder.bind(card, isSaved, onSaveClick, onCardClick)
     }
 
     override fun getItemCount(): Int {
@@ -42,8 +51,14 @@ class CardSearchAdapter(
         private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
         private val setNameTextView: TextView = itemView.findViewById(R.id.setNameTextView)
         private val typesTextView: TextView = itemView.findViewById(R.id.typesTextView)
+        private val saveButton: Button = itemView.findViewById(R.id.saveButton)
 
-        fun bind(card: PokemonCard, onCardClick: ((PokemonCard) -> Unit)?) {
+        fun bind(
+            card: PokemonCard,
+            isSaved: Boolean,
+            onSaveClick: (PokemonCard) -> Unit,
+            onCardClick: ((PokemonCard) -> Unit)?
+        ) {
             cardNameTextView.text = card.name
             setNameTextView.text = card.setName
 
@@ -63,6 +78,22 @@ class CardSearchAdapter(
                 .placeholder(android.R.drawable.ic_menu_report_image)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(cardImageView)
+
+            saveButton.text = if (isSaved) {
+                itemView.context.getString(R.string.saved_in_collection)
+            } else {
+                itemView.context.getString(R.string.save_to_collection)
+            }
+
+            saveButton.isEnabled = !isSaved
+
+            if (isSaved) {
+                saveButton.setOnClickListener(null)
+            } else {
+                saveButton.setOnClickListener {
+                    onSaveClick(card)
+                }
+            }
 
             if (onCardClick != null) {
                 itemView.setOnClickListener {

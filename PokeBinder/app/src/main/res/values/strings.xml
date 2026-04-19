@@ -19,6 +19,8 @@
     <string name="card_search_error_title">Unable to load cards</string>
     <string name="card_search_results_default">Results: 0</string>
     <string name="card_search_results_label">Results: %1$d</string>
+    <string name="save_to_collection">Save</string>
+    <string name="saved_in_collection">Saved</string>
 
     <string name="collection_title">My Collection</string>
     <string name="collection_subtitle">View the cards you have saved to your collection.</string>

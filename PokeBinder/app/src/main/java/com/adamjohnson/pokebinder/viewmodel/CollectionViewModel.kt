@@ -19,8 +19,6 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
         PokemonCardLocalDataSource(application.applicationContext)
     )
 
-    private var currentUserId: String? = null
-
     private val _collectionState = MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
     val collectionState: LiveData<UiState<List<PokemonCard>>> = _collectionState
 
@@ -32,7 +30,6 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
             return
         }
 
-        currentUserId = userId
         _collectionState.value = UiState.Loading
 
         collectionRepository.getSavedCards(userId) { savedCards, errorMessage ->
@@ -57,10 +54,17 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
         cardId: String,
         onResult: (String?) -> Unit = {}
     ) {
-        val userId = currentUserId ?: authRepository.getCurrentUserId()
+        val userId = authRepository.getCurrentUserId()
 
         if (userId.isNullOrBlank()) {
             val errorMessage = "You must be signed in to update your collection."
+            _collectionState.value = UiState.Error(errorMessage)
+            onResult(errorMessage)
+            return
+        }
+
+        if (cardId.isBlank()) {
+            val errorMessage = "Invalid card."
             _collectionState.value = UiState.Error(errorMessage)
             onResult(errorMessage)
             return

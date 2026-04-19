@@ -3,6 +3,7 @@ package com.adamjohnson.pokebinder.ui.collection
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,7 +30,11 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
         collectionAdapter = CollectionAdapter { card ->
-            collectionViewModel.removeCard(card.cardId)
+            collectionViewModel.removeCard(card.cardId) { errorMessage ->
+                if (errorMessage != null && isAdded) {
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         collectionRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -71,7 +76,10 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
                 }
             }
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
         collectionViewModel.loadCollection()
     }
 
