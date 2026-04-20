@@ -23,6 +23,13 @@
         android:text="@string/collection_subtitle"
         android:textAppearance="?attr/textAppearanceBodyMedium" />
 
+    <Button
+        android:id="@+id/addCardsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Add Cards" />
+
     <TextView
         android:id="@+id/resultCountTextView"
         android:layout_width="match_parent"
@@ -92,6 +99,13 @@
                 android:gravity="center"
                 android:text="@string/collection_empty_message"
                 android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+            <Button
+                android:id="@+id/emptyAddCardsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Add Cards" />
         </LinearLayout>
 
     </FrameLayout>

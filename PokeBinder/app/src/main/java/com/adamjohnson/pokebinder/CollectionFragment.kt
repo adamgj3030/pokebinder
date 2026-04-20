@@ -2,10 +2,12 @@ package com.adamjohnson.pokebinder.ui.collection
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
@@ -22,12 +24,22 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val addCardsButton: Button = view.findViewById(R.id.addCardsButton)
+        val emptyAddCardsButton: Button = view.findViewById(R.id.emptyAddCardsButton)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val collectionRecyclerView: RecyclerView = view.findViewById(R.id.collectionRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
         val emptyStateView: View = view.findViewById(R.id.emptyStateView)
         val emptyTitleTextView: TextView = view.findViewById(R.id.emptyTitleTextView)
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
+
+        addCardsButton.setOnClickListener {
+            openCardSearch()
+        }
+
+        emptyAddCardsButton.setOnClickListener {
+            openCardSearch()
+        }
 
         collectionAdapter = CollectionAdapter { card ->
             collectionViewModel.removeCard(card.cardId) { errorMessage ->
@@ -81,6 +93,12 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     override fun onResume() {
         super.onResume()
         collectionViewModel.loadCollection()
+    }
+
+    private fun openCardSearch() {
+        if (findNavController().currentDestination?.id == R.id.collectionFragment) {
+            findNavController().navigate(R.id.cardSearchFragment)
+        }
     }
 
     private fun renderLoading(
