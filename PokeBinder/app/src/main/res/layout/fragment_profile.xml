@@ -33,6 +33,14 @@
         android:textStyle="bold"
         tools:text="Adam Johnson" />
 
+    <TextView
+        android:id="@+id/signedInMessageTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/profile_signed_in_message"
+        android:textAppearance="?attr/textAppearanceBodyMedium" />
+
     <Button
         android:id="@+id/signOutButton"
         android:layout_width="match_parent"
@@ -41,10 +49,19 @@
         android:text="@string/sign_out" />
 
     <TextView
+        android:id="@+id/publishedPagesTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/profile_published_pages_title"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/resultCountTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:text="@string/profile_results_default"
         android:textAppearance="?attr/textAppearanceBodyMedium" />

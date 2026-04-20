@@ -30,6 +30,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
 
         val displayNameTextView: TextView = view.findViewById(R.id.displayNameTextView)
+        val signedInMessageTextView: TextView = view.findViewById(R.id.signedInMessageTextView)
         val signOutButton: Button = view.findViewById(R.id.signOutButton)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val profileRecyclerView: RecyclerView = view.findViewById(R.id.profileRecyclerView)
@@ -52,17 +53,31 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         profileViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user == null) {
+                renderSignedOut(
+                    displayNameTextView = displayNameTextView,
+                    signedInMessageTextView = signedInMessageTextView,
+                    signOutButton = signOutButton,
+                    resultCountTextView = resultCountTextView,
+                    profileRecyclerView = profileRecyclerView,
+                    loadingView = loadingView,
+                    emptyStateView = emptyStateView
+                )
                 navigateToLogin()
             } else {
                 renderUser(
                     user = user,
                     displayNameTextView = displayNameTextView,
+                    signedInMessageTextView = signedInMessageTextView,
                     signOutButton = signOutButton
                 )
             }
         }
 
         profileViewModel.publishedPagesState.observe(viewLifecycleOwner) { state ->
+            if (profileViewModel.currentUser.value == null) {
+                return@observe
+            }
+
             when (state) {
                 UiState.Loading -> {
                     renderLoading(
@@ -108,23 +123,46 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private fun renderUser(
         user: User,
         displayNameTextView: TextView,
+        signedInMessageTextView: TextView,
         signOutButton: Button
     ) {
         displayNameTextView.text = user.displayName.ifBlank {
             getString(R.string.profile_display_name_fallback)
         }
+        signedInMessageTextView.text = getString(R.string.profile_signed_in_message)
         signOutButton.isEnabled = true
     }
 
+    private fun renderSignedOut(
+        displayNameTextView: TextView,
+        signedInMessageTextView: TextView,
+        signOutButton: Button,
+        resultCountTextView: TextView,
+        profileRecyclerView: RecyclerView,
+        loadingView: View,
+        emptyStateView: View
+    ) {
+        displayNameTextView.text = getString(R.string.profile_display_name_fallback)
+        signedInMessageTextView.text = getString(R.string.profile_signed_out_message)
+        signOutButton.isEnabled = false
+
+        feedAdapter.submitList(emptyList())
+        resultCountTextView.text = getString(R.string.profile_results_default)
+        profileRecyclerView.visibility = View.GONE
+        loadingView.visibility = View.GONE
+        emptyStateView.visibility = View.GONE
+    }
+
     private fun openPublishedPageDetail(binderPage: BinderPage) {
-        if (binderPage.pageId.isBlank()) {
+        val pageId = binderPage.pageId.trim()
+        if (pageId.isBlank()) {
             return
         }
 
         if (findNavController().currentDestination?.id == R.id.profileFragment) {
             findNavController().navigate(
                 R.id.pageDetailFragment,
-                bundleOf(PageDetailFragment.ARG_PAGE_ID to binderPage.pageId)
+                bundleOf(PageDetailFragment.ARG_PAGE_ID to pageId)
             )
         }
     }

@@ -260,6 +260,7 @@
                     android:id="@+id/likeButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:enabled="false"
                     android:text="@string/page_detail_like" />
 
                 <TextView
@@ -291,6 +292,7 @@
                 android:id="@+id/commentEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:layout_marginTop="8dp"
                 android:gravity="top|start"
                 android:hint="@string/page_detail_comment_hint"
@@ -303,6 +305,7 @@
                 android:id="@+id/submitCommentButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:layout_marginTop="8dp"
                 android:text="@string/page_detail_submit_comment" />
 

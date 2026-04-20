@@ -8,14 +8,16 @@
     <string name="auth_loading">Working...</string>
     <string name="profile_title">My Profile</string>
     <string name="profile_signed_in_message">You are signed in to PokeBinder.</string>
+    <string name="profile_signed_out_message">You must be signed in to view your profile.</string>
     <string name="profile_subtitle">View your signed-in account and your published binder pages.</string>
     <string name="profile_display_name_fallback">PokeBinder User</string>
+    <string name="profile_published_pages_title">Your Published Pages</string>
     <string name="profile_loading">Loading profile...</string>
     <string name="profile_empty_title">No published pages yet</string>
     <string name="profile_empty_message">Publish a completed binder page to see it here.</string>
     <string name="profile_error_title">Unable to load profile</string>
-    <string name="profile_results_default">Published pages: 0</string>
-    <string name="profile_results_label">Published pages: %1$d</string>
+    <string name="profile_results_default">Your published pages: 0</string>
+    <string name="profile_results_label">Your published pages: %1$d</string>
     <string name="sign_out">Sign Out</string>
 
     <string name="card_search_title">Card Catalog</string>
@@ -117,7 +119,11 @@
     <string name="page_detail_comment_count">Comments: %1$d</string>
     <string name="page_detail_add_comment_title">Add a Comment</string>
     <string name="page_detail_comment_hint">Write a comment</string>
+    <string name="page_detail_comment_sign_in_hint">Sign in to add a comment</string>
     <string name="page_detail_submit_comment">Submit Comment</string>
+    <string name="page_detail_sign_in_to_like">Sign in to like</string>
+    <string name="page_detail_sign_in_to_comment">Sign in to comment</string>
+    <string name="page_detail_sign_in_social_message">Sign in to like and comment on published pages.</string>
     <string name="page_detail_comment_submit_loading">Posting comment...</string>
     <string name="page_detail_comment_submit_success">Comment added.</string>
     <string name="page_detail_comment_required">Comment text is required.</string>

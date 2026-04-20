@@ -15,7 +15,9 @@ class PageDetailViewModel : ViewModel() {
     private val authRepository = AuthRepository()
     private val binderPageRepository = BinderPageRepository()
     private val socialRepository = SocialRepository()
+
     private var loadedPageId: String? = null
+    private var refreshGeneration = 0
 
     private val _pageState = MutableLiveData<UiState<BinderPage>>(UiState.Loading)
     val pageState: LiveData<UiState<BinderPage>> = _pageState
@@ -36,37 +38,48 @@ class PageDetailViewModel : ViewModel() {
     private val _socialMessage = MutableLiveData<String?>(null)
     val socialMessage: LiveData<String?> = _socialMessage
 
+    private val _userSignedInState = MutableLiveData(authRepository.isSignedIn())
+    val userSignedInState: LiveData<Boolean> = _userSignedInState
+
     fun loadPage(pageId: String) {
+        refreshAuthState()
+
         val normalizedPageId = pageId.trim()
-
-        if (normalizedPageId.isBlank()) {
-            _pageState.value = UiState.Error("Invalid page.")
-            _commentsState.value = UiState.Error("Invalid page.")
-            _isLiked.value = false
-            _isLikeLoading.value = false
-            _commentSubmissionState.value = null
-            _socialMessage.value = null
-            return
-        }
-
-        loadedPageId = normalizedPageId
-        _pageState.value = UiState.Loading
-        _commentsState.value = UiState.Loading
-        _isLiked.value = false
+        loadedPageId = normalizedPageId.ifBlank { null }
         _isLikeLoading.value = false
         _commentSubmissionState.value = null
         _socialMessage.value = null
 
-        refreshPageContent(normalizedPageId)
+        if (normalizedPageId.isBlank()) {
+            nextRefreshId()
+            _pageState.value = UiState.Error("Invalid page.")
+            _commentsState.value = UiState.Error("Invalid page.")
+            _isLiked.value = false
+            return
+        }
+
+        _pageState.value = UiState.Loading
+        _commentsState.value = UiState.Loading
+        _isLiked.value = false
+
+        refreshPageContent(normalizedPageId, nextRefreshId())
     }
 
-    fun isUserSignedIn(): Boolean {
-        return authRepository.isSignedIn()
+    fun refreshCurrentPage() {
+        refreshAuthState()
+
+        val pageId = loadedPageId.orEmpty()
+        if (pageId.isBlank()) {
+            return
+        }
+
+        refreshPageContent(pageId, nextRefreshId())
     }
 
     fun toggleLike() {
-        val pageId = loadedPageId.orEmpty()
+        refreshAuthState()
 
+        val pageId = loadedPageId.orEmpty()
         if (pageId.isBlank()) {
             _socialMessage.value = "Invalid page."
             return
@@ -89,7 +102,8 @@ class PageDetailViewModel : ViewModel() {
 
             if (isNowLiked != null) {
                 _isLiked.postValue(isNowLiked)
-                loadPublishedPage(pageId)
+                updateCurrentPageLikeCount(isNowLiked)
+                refreshCurrentPage()
             } else {
                 _socialMessage.postValue(
                     errorMessage ?: "Unable to update page like."
@@ -99,8 +113,9 @@ class PageDetailViewModel : ViewModel() {
     }
 
     fun submitComment(text: String) {
-        val pageId = loadedPageId.orEmpty()
+        refreshAuthState()
 
+        val pageId = loadedPageId.orEmpty()
         if (pageId.isBlank()) {
             _commentSubmissionState.value = UiState.Error("Invalid page.")
             return
@@ -133,9 +148,10 @@ class PageDetailViewModel : ViewModel() {
             text = normalizedText
         ) { comment, errorMessage ->
             if (comment != null) {
+                appendCommentToCurrentList(comment)
+                updateCurrentPageCommentCount()
                 _commentSubmissionState.postValue(UiState.Success(comment))
-                loadPublishedPage(pageId)
-                loadComments(pageId)
+                refreshCurrentPage()
             } else {
                 _commentSubmissionState.postValue(
                     UiState.Error(errorMessage ?: "Unable to add comment.")
@@ -144,18 +160,30 @@ class PageDetailViewModel : ViewModel() {
         }
     }
 
+    fun clearCommentSubmissionState() {
+        if (_commentSubmissionState.value == UiState.Loading) {
+            return
+        }
+
+        _commentSubmissionState.value = null
+    }
+
     fun clearSocialMessage() {
         _socialMessage.value = null
     }
 
-    private fun refreshPageContent(pageId: String) {
-        loadPublishedPage(pageId)
-        loadComments(pageId)
-        loadLikeState(pageId)
+    private fun refreshPageContent(pageId: String, refreshId: Int) {
+        loadPublishedPage(pageId, refreshId)
+        loadComments(pageId, refreshId)
+        loadLikeState(pageId, refreshId)
     }
 
-    private fun loadPublishedPage(pageId: String) {
+    private fun loadPublishedPage(pageId: String, refreshId: Int) {
         binderPageRepository.getPublishedPage(pageId) { binderPage, errorMessage ->
+            if (!isActiveRefresh(refreshId)) {
+                return@getPublishedPage
+            }
+
             if (binderPage != null) {
                 _pageState.postValue(UiState.Success(binderPage))
             } else {
@@ -166,8 +194,12 @@ class PageDetailViewModel : ViewModel() {
         }
     }
 
-    private fun loadComments(pageId: String) {
+    private fun loadComments(pageId: String, refreshId: Int) {
         socialRepository.getComments(pageId) { comments, errorMessage ->
+            if (!isActiveRefresh(refreshId)) {
+                return@getComments
+            }
+
             if (comments != null) {
                 _commentsState.postValue(UiState.Success(comments))
             } else {
@@ -178,16 +210,71 @@ class PageDetailViewModel : ViewModel() {
         }
     }
 
-    private fun loadLikeState(pageId: String) {
+    private fun loadLikeState(pageId: String, refreshId: Int) {
         val userId = authRepository.getCurrentUserId()
 
         if (userId.isNullOrBlank()) {
-            _isLiked.value = false
+            if (isActiveRefresh(refreshId)) {
+                _isLiked.postValue(false)
+            }
             return
         }
 
         socialRepository.isPageLikedByUser(pageId, userId) { isLiked, _ ->
+            if (!isActiveRefresh(refreshId)) {
+                return@isPageLikedByUser
+            }
+
             _isLiked.postValue(isLiked == true)
         }
+    }
+
+    private fun updateCurrentPageLikeCount(isNowLiked: Boolean) {
+        val currentPage = (_pageState.value as? UiState.Success)?.data ?: return
+
+        val updatedLikeCount = if (isNowLiked) {
+            currentPage.likeCount + 1
+        } else {
+            maxOf(currentPage.likeCount - 1, 0)
+        }
+
+        _pageState.postValue(
+            UiState.Success(
+                currentPage.copy(likeCount = updatedLikeCount)
+            )
+        )
+    }
+
+    private fun updateCurrentPageCommentCount() {
+        val currentPage = (_pageState.value as? UiState.Success)?.data ?: return
+
+        _pageState.postValue(
+            UiState.Success(
+                currentPage.copy(commentCount = currentPage.commentCount + 1)
+            )
+        )
+    }
+
+    private fun appendCommentToCurrentList(comment: Comment) {
+        val currentComments = (_commentsState.value as? UiState.Success)?.data ?: return
+
+        if (currentComments.any { it.commentId == comment.commentId }) {
+            return
+        }
+
+        _commentsState.postValue(UiState.Success(currentComments + comment))
+    }
+
+    private fun refreshAuthState() {
+        _userSignedInState.value = authRepository.isSignedIn()
+    }
+
+    private fun nextRefreshId(): Int {
+        refreshGeneration += 1
+        return refreshGeneration
+    }
+
+    private fun isActiveRefresh(refreshId: Int): Boolean {
+        return refreshId == refreshGeneration
     }
 }
