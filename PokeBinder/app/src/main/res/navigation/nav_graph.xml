@@ -54,6 +54,17 @@
     </fragment>
 
     <fragment
+        android:id="@+id/socialPagesFragment"
+        android:name="com.adamjohnson.pokebinder.ui.feed.SocialPagesFragment"
+        android:label="SocialPagesFragment">
+
+        <argument
+            android:name="listMode"
+            android:defaultValue="likes"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
         android:id="@+id/profileFragment"
         android:name="com.adamjohnson.pokebinder.ui.profile.ProfileFragment"
         android:label="ProfileFragment" />

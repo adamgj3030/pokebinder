@@ -10,7 +10,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
+import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
+import com.adamjohnson.pokebinder.data.repository.CardRepository
 import com.adamjohnson.pokebinder.ui.detail.PageDetailFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.FeedViewModel
@@ -19,11 +21,16 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
 
     private val feedViewModel: FeedViewModel by viewModels()
 
+    private val cardRepository by lazy {
+        CardRepository(PokemonCardLocalDataSource(requireContext().applicationContext))
+    }
+
     private lateinit var feedAdapter: FeedAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val feedTitleTextView: TextView = view.findViewById(R.id.feedTitleTextView)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val feedRecyclerView: RecyclerView = view.findViewById(R.id.feedRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
@@ -31,7 +38,9 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
         val emptyTitleTextView: TextView = view.findViewById(R.id.emptyTitleTextView)
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
-        feedAdapter = FeedAdapter { binderPage ->
+        feedTitleTextView.text = getString(R.string.feed_title)
+
+        feedAdapter = FeedAdapter(cardRepository) { binderPage ->
             openPublishedPageDetail(binderPage)
         }
 

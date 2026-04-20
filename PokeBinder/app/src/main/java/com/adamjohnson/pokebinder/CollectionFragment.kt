@@ -3,8 +3,10 @@ package com.adamjohnson.pokebinder.ui.collection
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -25,6 +27,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         super.onViewCreated(view, savedInstanceState)
 
         val addCardsButton: Button = view.findViewById(R.id.addCardsButton)
+        val searchEditText: EditText = view.findViewById(R.id.searchEditText)
         val emptyAddCardsButton: Button = view.findViewById(R.id.emptyAddCardsButton)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val collectionRecyclerView: RecyclerView = view.findViewById(R.id.collectionRecyclerView)
@@ -41,6 +44,10 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             openCardSearch()
         }
 
+        searchEditText.doAfterTextChanged { editable ->
+            collectionViewModel.updateSearchQuery(editable?.toString().orEmpty())
+        }
+
         collectionAdapter = CollectionAdapter { card ->
             collectionViewModel.removeCard(card.cardId) { errorMessage ->
                 if (errorMessage != null && isAdded) {
@@ -51,6 +58,13 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
         collectionRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         collectionRecyclerView.adapter = collectionAdapter
+
+        collectionViewModel.searchQuery.observe(viewLifecycleOwner) { query ->
+            if (searchEditText.text.toString() != query) {
+                searchEditText.setText(query)
+                searchEditText.setSelection(query.length)
+            }
+        }
 
         collectionViewModel.collectionState.observe(viewLifecycleOwner) { state ->
             when (state) {
@@ -107,7 +121,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         loadingView: View,
         emptyStateView: View
     ) {
-        resultCountTextView.text = getString(R.string.collection_results_default)
+        resultCountTextView.text = "Results: 0"
         collectionRecyclerView.visibility = View.GONE
         loadingView.visibility = View.VISIBLE
         emptyStateView.visibility = View.GONE
@@ -123,14 +137,20 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         emptyMessageTextView: TextView
     ) {
         collectionAdapter.submitList(cards)
-        resultCountTextView.text = getString(R.string.collection_results_label, cards.size)
+        resultCountTextView.text = "Results: ${cards.size}"
         loadingView.visibility = View.GONE
 
         if (cards.isEmpty()) {
             collectionRecyclerView.visibility = View.GONE
             emptyStateView.visibility = View.VISIBLE
-            emptyTitleTextView.text = getString(R.string.collection_empty_title)
-            emptyMessageTextView.text = getString(R.string.collection_empty_message)
+
+            if (collectionViewModel.searchQuery.value.orEmpty().isBlank()) {
+                emptyTitleTextView.text = "No saved cards yet"
+                emptyMessageTextView.text = "Save cards from the catalog to see them here."
+            } else {
+                emptyTitleTextView.text = "No matching cards"
+                emptyMessageTextView.text = "Try a different search in your saved cards."
+            }
         } else {
             collectionRecyclerView.visibility = View.VISIBLE
             emptyStateView.visibility = View.GONE
@@ -147,11 +167,11 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         emptyMessageTextView: TextView
     ) {
         collectionAdapter.submitList(emptyList())
-        resultCountTextView.text = getString(R.string.collection_results_default)
+        resultCountTextView.text = "Results: 0"
         collectionRecyclerView.visibility = View.GONE
         loadingView.visibility = View.GONE
         emptyStateView.visibility = View.VISIBLE
-        emptyTitleTextView.text = getString(R.string.collection_error_title)
+        emptyTitleTextView.text = "Unable to load collection"
         emptyMessageTextView.text = message
     }
 }

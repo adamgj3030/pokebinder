@@ -11,31 +11,32 @@
         android:id="@+id/collectionTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/collection_title"
+        android:text="My Collection"
         android:textAppearance="?attr/textAppearanceHeadlineSmall" />
-
-    <TextView
-        android:id="@+id/collectionSubtitleTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/collection_subtitle"
-        android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     <Button
         android:id="@+id/addCardsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
         android:text="Add Cards" />
+
+    <EditText
+        android:id="@+id/searchEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Search your saved cards"
+        android:imeOptions="actionDone"
+        android:inputType="text" />
 
     <TextView
         android:id="@+id/resultCountTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="@string/collection_results_default"
+        android:text="Results: 0"
         android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     <FrameLayout
@@ -71,7 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="@string/collection_loading"
+                android:text="Loading collection..."
                 android:textAppearance="?attr/textAppearanceBodyMedium" />
         </LinearLayout>
 
@@ -88,7 +89,7 @@
                 android:id="@+id/emptyTitleTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/collection_empty_title"
+                android:text="No saved cards yet"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
             <TextView
@@ -97,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="@string/collection_empty_message"
+                android:text="Save cards from the catalog to see them here."
                 android:textAppearance="?attr/textAppearanceBodyMedium" />
 
             <Button
@@ -105,7 +106,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Add Cards" />
+                android:text="Browse Card Catalog" />
         </LinearLayout>
 
     </FrameLayout>

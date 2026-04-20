@@ -4,21 +4,21 @@
     <item
         android:id="@+id/feedFragment"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Feed" />
+        android:title="@string/feed_title" />
 
     <item
         android:id="@+id/collectionFragment"
         android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Collection" />
+        android:title="@string/collection_title" />
 
     <item
-        android:id="@+id/binderEditorFragment"
+        android:id="@+id/draftsFragment"
         android:icon="@android:drawable/ic_menu_add"
-        android:title="Create" />
+        android:title="@string/binders_title" />
 
     <item
         android:id="@+id/profileFragment"
         android:icon="@android:drawable/ic_menu_myplaces"
-        android:title="Profile" />
+        android:title="@string/profile_title" />
 
 </menu>

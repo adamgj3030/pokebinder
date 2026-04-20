@@ -18,73 +18,33 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/screenTitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/page_detail_title"
-                android:textAppearance="?attr/textAppearanceTitleLarge" />
-
-            <TextView
                 android:id="@+id/pageTitleTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:textAppearance="?attr/textAppearanceHeadlineSmall"
                 android:textStyle="bold"
                 tools:text="Grass Favorites" />
 
             <TextView
-                android:id="@+id/readOnlyMessageTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/page_detail_read_only_message"
-                android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-            <TextView
-                android:id="@+id/pageStatusTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                tools:text="Status: Published" />
-
-            <TextView
-                android:id="@+id/filledSlotsTextView"
+                android:id="@+id/creatorUsernameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                tools:text="Filled slots: 9/9" />
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                tools:text="By AdamJohnson" />
 
             <TextView
                 android:id="@+id/publishedAtTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                tools:text="Published: Apr 19, 2026, 2:15 PM" />
-
-            <TextView
-                android:id="@+id/gridTitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/page_detail_grid_title"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-            <TextView
-                android:id="@+id/gridSubtitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/page_detail_grid_subtitle"
-                android:textAppearance="?attr/textAppearanceBodyMedium" />
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                tools:text="Published Apr 19, 2026, 2:15 PM" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -92,49 +52,37 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/slot1TextView"
+                    <ImageView
+                        android:id="@+id/slot1ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 1&#10;Bulbasaur&#10;Base Set" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot2TextView"
+                    <ImageView
+                        android:id="@+id/slot2ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 2&#10;Pikachu&#10;Base Set" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot3TextView"
+                    <ImageView
+                        android:id="@+id/slot3ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 3&#10;Abra&#10;151" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -143,49 +91,37 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/slot4TextView"
+                    <ImageView
+                        android:id="@+id/slot4ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 4&#10;Snorlax&#10;Jungle" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot5TextView"
+                    <ImageView
+                        android:id="@+id/slot5ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 5&#10;Mew&#10;Celebrations" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot6TextView"
+                    <ImageView
+                        android:id="@+id/slot6ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 6&#10;Gengar&#10;Fossil" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -194,51 +130,38 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/slot7TextView"
+                    <ImageView
+                        android:id="@+id/slot7ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 7&#10;Eevee&#10;Base Set" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot8TextView"
+                    <ImageView
+                        android:id="@+id/slot8ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 8&#10;Dragonite&#10;Fossil" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
 
-                    <TextView
-                        android:id="@+id/slot9TextView"
+                    <ImageView
+                        android:id="@+id/slot9ImageView"
                         android:layout_width="0dp"
-                        android:layout_height="112dp"
+                        android:layout_height="168dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:background="@android:color/darker_gray"
-                        android:ellipsize="end"
-                        android:gravity="center"
-                        android:maxLines="4"
-                        android:padding="6dp"
-                        android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@android:color/white"
-                        tools:text="Slot 9&#10;Charizard&#10;Base Set" />
+                        android:contentDescription="@string/pokemon_card_image"
+                        android:scaleType="fitCenter"
+                        android:src="@android:drawable/ic_menu_report_image" />
                 </LinearLayout>
-
             </LinearLayout>
 
             <TextView
@@ -292,8 +215,8 @@
                 android:id="@+id/commentEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:enabled="false"
                 android:layout_marginTop="8dp"
+                android:enabled="false"
                 android:gravity="top|start"
                 android:hint="@string/page_detail_comment_hint"
                 android:inputType="textCapSentences|textMultiLine"
@@ -305,8 +228,8 @@
                 android:id="@+id/submitCommentButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:enabled="false"
                 android:layout_marginTop="8dp"
+                android:enabled="false"
                 android:text="@string/page_detail_submit_comment" />
 
             <TextView

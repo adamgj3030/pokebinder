@@ -206,6 +206,56 @@ class SocialRepository(
         }
     }
 
+    fun getLikedPageIdsForUser(
+        userId: String,
+        onResult: (List<String>?, String?) -> Unit
+    ) {
+        getPageIdsForUserInteraction(
+            userId = userId,
+            collectionName = LIKES_COLLECTION,
+            defaultErrorMessage = "Unable to load liked pages.",
+            onResult = onResult
+        )
+    }
+
+    fun getCommentedPageIdsForUser(
+        userId: String,
+        onResult: (List<String>?, String?) -> Unit
+    ) {
+        getPageIdsForUserInteraction(
+            userId = userId,
+            collectionName = COMMENTS_COLLECTION,
+            defaultErrorMessage = "Unable to load commented pages.",
+            onResult = onResult
+        )
+    }
+
+    private fun getPageIdsForUserInteraction(
+        userId: String,
+        collectionName: String,
+        defaultErrorMessage: String,
+        onResult: (List<String>?, String?) -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onResult(null, "Invalid user.")
+            return
+        }
+
+        firestore.collectionGroup(collectionName)
+            .whereEqualTo(FIELD_USER_ID, userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val pageIds = snapshot.documents.mapNotNull { document ->
+                    document.reference.parent.parent?.id
+                }.distinct()
+
+                onResult(pageIds, null)
+            }
+            .addOnFailureListener { exception ->
+                onResult(null, exception.localizedMessage ?: defaultErrorMessage)
+            }
+    }
+
     private fun validatePublishedPage(
         pageId: String,
         onResult: (String?) -> Unit

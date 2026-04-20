@@ -3,14 +3,16 @@ package com.adamjohnson.pokebinder.data.repository
 import com.adamjohnson.pokebinder.data.model.BinderPage
 import com.adamjohnson.pokebinder.data.model.BinderPageStatus
 import com.adamjohnson.pokebinder.data.model.BinderSlot
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.SetOptions
 
 class BinderPageRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
+
+    private val authRepository = AuthRepository()
 
     fun saveDraftPage(
         userId: String,
@@ -34,10 +36,14 @@ class BinderPageRepository(
         } else {
             now
         }
+        val creatorUsername = binderPage.creatorUsername.trim().ifBlank {
+            authRepository.getCurrentUser()?.username.orEmpty().trim()
+        }
 
         val savedDraftPage = binderPage.copy(
             pageId = document.id,
             ownerUserId = userId,
+            creatorUsername = creatorUsername,
             title = binderPage.title.trim(),
             slots = normalizeSlots(binderPage.slots),
             status = BinderPageStatus.DRAFT,
@@ -85,74 +91,80 @@ class BinderPageRepository(
             return
         }
 
-        val document = if (binderPage.pageId.isBlank()) {
+        val publishedDocument = if (binderPage.pageId.isBlank()) {
             publishedPagesCollection().document()
         } else {
             publishedPagesCollection().document(binderPage.pageId)
         }
 
         val now = System.currentTimeMillis()
+        val createdAt = if (binderPage.createdAt > 0L) {
+            binderPage.createdAt
+        } else {
+            now
+        }
+        val creatorUsername = binderPage.creatorUsername.trim().ifBlank {
+            authRepository.getCurrentUser()?.username.orEmpty().trim()
+        }
 
-        firestore.runTransaction<BinderPage> { transaction ->
-            val existingPublishedSnapshot = transaction.get(document)
-            val existingPublishedPage = if (existingPublishedSnapshot.exists()) {
-                documentToPublishedPage(existingPublishedSnapshot)
-            } else {
-                null
-            }
+        val publishedBinderPage = binderPage.copy(
+            pageId = publishedDocument.id,
+            ownerUserId = userId,
+            creatorUsername = creatorUsername,
+            title = binderPage.title.trim(),
+            slots = normalizeSlots(binderPage.slots),
+            status = BinderPageStatus.PUBLISHED,
+            createdAt = createdAt,
+            updatedAt = now,
+            publishedAt = now,
+            likeCount = maxOf(binderPage.likeCount, 0),
+            commentCount = maxOf(binderPage.commentCount, 0)
+        )
 
-            if (
-                existingPublishedPage != null &&
-                existingPublishedPage.ownerUserId.isNotBlank() &&
-                existingPublishedPage.ownerUserId != userId
-            ) {
-                throw FirebaseFirestoreException(
-                    "You cannot publish over another user's page.",
-                    FirebaseFirestoreException.Code.PERMISSION_DENIED
-                )
-            }
-
-            val createdAt =
-                existingPublishedPage?.createdAt?.takeIf { it > 0L }
-                    ?: binderPage.createdAt.takeIf { it > 0L }
-                    ?: now
-
-            val publishedAt =
-                existingPublishedPage?.publishedAt?.takeIf { it > 0L }
-                    ?: binderPage.publishedAt?.takeIf { it > 0L }
-                    ?: now
-
-            val likeCount = existingPublishedPage?.likeCount ?: 0
-            val commentCount = existingPublishedPage?.commentCount ?: 0
-
-            val publishedPage = binderPage.copy(
-                pageId = document.id,
-                ownerUserId = userId,
-                title = binderPage.title.trim(),
-                slots = normalizeSlots(binderPage.slots),
-                status = BinderPageStatus.PUBLISHED,
-                createdAt = createdAt,
-                updatedAt = now,
-                publishedAt = publishedAt,
-                likeCount = likeCount,
-                commentCount = commentCount
+        firestore.runTransaction { transaction ->
+            transaction.set(
+                publishedDocument,
+                publishedPageToMap(publishedBinderPage)
             )
 
-            transaction.set(document, publishedPageToMap(publishedPage), SetOptions.merge())
-
             if (binderPage.pageId.isNotBlank()) {
-                transaction.delete(draftPagesCollection(userId).document(binderPage.pageId))
+                val draftDocument = draftPagesCollection(userId).document(binderPage.pageId)
+                transaction.delete(draftDocument)
             }
-
-            publishedPage
-        }.addOnSuccessListener { publishedPage ->
-            onResult(publishedPage, null)
+        }.addOnSuccessListener {
+            onResult(publishedBinderPage, null)
         }.addOnFailureListener { exception ->
             onResult(
                 null,
                 exception.localizedMessage ?: "Unable to publish binder page."
             )
         }
+    }
+
+    fun getDraftPages(
+        userId: String,
+        onResult: (List<BinderPage>?, String?) -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onResult(null, "Invalid user.")
+            return
+        }
+
+        draftPagesCollection(userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val draftPages = snapshot.documents.map { document ->
+                    documentToDraftPage(userId, document)
+                }.sortedByDescending { it.updatedAt }
+
+                onResult(draftPages, null)
+            }
+            .addOnFailureListener { exception ->
+                onResult(
+                    null,
+                    exception.localizedMessage ?: "Unable to load draft pages."
+                )
+            }
     }
 
     fun getDraftPage(
@@ -184,92 +196,6 @@ class BinderPageRepository(
                 onResult(
                     null,
                     exception.localizedMessage ?: "Unable to load draft page."
-                )
-            }
-    }
-
-    fun getEditorPage(
-        userId: String,
-        pageId: String,
-        onResult: (BinderPage?, String?) -> Unit
-    ) {
-        if (userId.isBlank()) {
-            onResult(null, "Invalid user.")
-            return
-        }
-
-        if (pageId.isBlank()) {
-            onResult(null, "Invalid page.")
-            return
-        }
-
-        draftPagesCollection(userId)
-            .document(pageId)
-            .get()
-            .addOnSuccessListener { draftDocument ->
-                if (draftDocument.exists()) {
-                    onResult(documentToDraftPage(userId, draftDocument), null)
-                } else {
-                    publishedPagesCollection()
-                        .document(pageId)
-                        .get()
-                        .addOnSuccessListener { publishedDocument ->
-                            if (!publishedDocument.exists()) {
-                                onResult(null, "Page not found.")
-                                return@addOnSuccessListener
-                            }
-
-                            val publishedPage = documentToPublishedPage(publishedDocument)
-                            if (
-                                publishedPage.ownerUserId.isNotBlank() &&
-                                publishedPage.ownerUserId != userId
-                            ) {
-                                onResult(
-                                    null,
-                                    "You cannot open another user's published page in the editor."
-                                )
-                            } else {
-                                onResult(publishedPage, null)
-                            }
-                        }
-                        .addOnFailureListener { exception ->
-                            onResult(
-                                null,
-                                exception.localizedMessage ?: "Unable to load binder page."
-                            )
-                        }
-                }
-            }
-            .addOnFailureListener { exception ->
-                onResult(
-                    null,
-                    exception.localizedMessage ?: "Unable to load binder page."
-                )
-            }
-    }
-
-    fun getDraftPages(
-        userId: String,
-        onResult: (List<BinderPage>?, String?) -> Unit
-    ) {
-        if (userId.isBlank()) {
-            onResult(null, "Invalid user.")
-            return
-        }
-
-        draftPagesCollection(userId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val draftPages = snapshot.documents.map { document ->
-                    documentToDraftPage(userId, document)
-                }.sortedByDescending { it.updatedAt }
-
-                onResult(draftPages, null)
-            }
-            .addOnFailureListener { exception ->
-                onResult(
-                    null,
-                    exception.localizedMessage ?: "Unable to load draft pages."
                 )
             }
     }
@@ -323,6 +249,34 @@ class BinderPageRepository(
             }
     }
 
+    fun getPublishedPagesByIds(
+        pageIds: List<String>,
+        onResult: (List<BinderPage>?, String?) -> Unit
+    ) {
+        val normalizedPageIds = pageIds.map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toSet()
+
+        if (normalizedPageIds.isEmpty()) {
+            onResult(emptyList(), null)
+            return
+        }
+
+        getPublishedPages { publishedPages, errorMessage ->
+            if (publishedPages != null) {
+                onResult(
+                    publishedPages.filter { normalizedPageIds.contains(it.pageId) },
+                    null
+                )
+            } else {
+                onResult(
+                    null,
+                    errorMessage ?: "Unable to load published pages."
+                )
+            }
+        }
+    }
+
     fun getPublishedPagesForUser(
         userId: String,
         onResult: (List<BinderPage>?, String?) -> Unit
@@ -352,6 +306,73 @@ class BinderPageRepository(
             }
     }
 
+    fun deleteDraftPage(
+        userId: String,
+        pageId: String,
+        onResult: (String?) -> Unit = {}
+    ) {
+        if (userId.isBlank()) {
+            onResult("Invalid user.")
+            return
+        }
+
+        if (pageId.isBlank()) {
+            onResult("Invalid page.")
+            return
+        }
+
+        draftPagesCollection(userId)
+            .document(pageId)
+            .delete()
+            .addOnSuccessListener {
+                onResult(null)
+            }
+            .addOnFailureListener { exception ->
+                onResult(
+                    exception.localizedMessage ?: "Unable to delete draft page."
+                )
+            }
+    }
+
+    fun deletePublishedPage(
+        userId: String,
+        pageId: String,
+        onResult: (String?) -> Unit = {}
+    ) {
+        if (userId.isBlank()) {
+            onResult("Invalid user.")
+            return
+        }
+
+        if (pageId.isBlank()) {
+            onResult("Invalid page.")
+            return
+        }
+
+        val pageDocument = publishedPagesCollection().document(pageId)
+
+        pageDocument.get()
+            .addOnSuccessListener { pageSnapshot ->
+                if (!pageSnapshot.exists()) {
+                    onResult("Published page not found.")
+                    return@addOnSuccessListener
+                }
+
+                val ownerUserId = pageSnapshot.getString(FIELD_OWNER_USER_ID).orEmpty()
+                if (ownerUserId != userId) {
+                    onResult("Invalid user.")
+                    return@addOnSuccessListener
+                }
+
+                deletePublishedPageWithChildren(pageDocument, onResult)
+            }
+            .addOnFailureListener { exception ->
+                onResult(
+                    exception.localizedMessage ?: "Unable to delete published page."
+                )
+            }
+    }
+
     private fun draftPagesCollection(userId: String) =
         firestore.collection(USERS_COLLECTION)
             .document(userId)
@@ -360,18 +381,84 @@ class BinderPageRepository(
     private fun publishedPagesCollection() =
         firestore.collection(PUBLISHED_PAGES_COLLECTION)
 
+    private fun likesCollection(pageId: String) =
+        publishedPagesCollection()
+            .document(pageId)
+            .collection(LIKES_COLLECTION)
+
+    private fun commentsCollection(pageId: String) =
+        publishedPagesCollection()
+            .document(pageId)
+            .collection(COMMENTS_COLLECTION)
+
+    private fun deletePublishedPageWithChildren(
+        pageDocument: DocumentReference,
+        onResult: (String?) -> Unit
+    ) {
+        val pageId = pageDocument.id
+
+        likesCollection(pageId)
+            .get()
+            .addOnSuccessListener { likesSnapshot ->
+                commentsCollection(pageId)
+                    .get()
+                    .addOnSuccessListener { commentsSnapshot ->
+                        val batch = firestore.batch()
+
+                        likesSnapshot.documents.forEach { document ->
+                            batch.delete(document.reference)
+                        }
+
+                        commentsSnapshot.documents.forEach { document ->
+                            batch.delete(document.reference)
+                        }
+
+                        batch.delete(pageDocument)
+
+                        batch.commit()
+                            .addOnSuccessListener {
+                                onResult(null)
+                            }
+                            .addOnFailureListener { exception ->
+                                onResult(
+                                    exception.localizedMessage
+                                        ?: "Unable to delete published page."
+                                )
+                            }
+                    }
+                    .addOnFailureListener { exception ->
+                        onResult(
+                            exception.localizedMessage
+                                ?: "Unable to delete published page comments."
+                        )
+                    }
+            }
+            .addOnFailureListener { exception ->
+                onResult(
+                    exception.localizedMessage ?: "Unable to delete published page likes."
+                )
+            }
+    }
+
     private fun draftPageToMap(binderPage: BinderPage): Map<String, Any> {
-        return hashMapOf(
+        val pageData = hashMapOf<String, Any>(
             FIELD_TITLE to binderPage.title,
             FIELD_SLOTS to slotsToMap(binderPage.slots),
             FIELD_CREATED_AT to binderPage.createdAt,
             FIELD_UPDATED_AT to binderPage.updatedAt
         )
+
+        if (binderPage.creatorUsername.isNotBlank()) {
+            pageData[FIELD_CREATOR_USERNAME] = binderPage.creatorUsername
+        }
+
+        return pageData
     }
 
     private fun publishedPageToMap(binderPage: BinderPage): Map<String, Any> {
         return hashMapOf(
             FIELD_OWNER_USER_ID to binderPage.ownerUserId,
+            FIELD_CREATOR_USERNAME to binderPage.creatorUsername,
             FIELD_TITLE to binderPage.title,
             FIELD_SLOTS to slotsToMap(binderPage.slots),
             FIELD_STATUS to BinderPageStatus.PUBLISHED.name,
@@ -404,6 +491,7 @@ class BinderPageRepository(
         return BinderPage(
             pageId = document.id,
             ownerUserId = userId,
+            creatorUsername = document.getString(FIELD_CREATOR_USERNAME).orEmpty(),
             title = document.getString(FIELD_TITLE).orEmpty(),
             slots = parseSlots(document),
             status = BinderPageStatus.DRAFT,
@@ -421,6 +509,7 @@ class BinderPageRepository(
         return BinderPage(
             pageId = document.id,
             ownerUserId = document.getString(FIELD_OWNER_USER_ID).orEmpty(),
+            creatorUsername = document.getString(FIELD_CREATOR_USERNAME).orEmpty(),
             title = document.getString(FIELD_TITLE).orEmpty(),
             slots = parseSlots(document),
             status = BinderPageStatus.PUBLISHED,
@@ -480,8 +569,11 @@ class BinderPageRepository(
         private const val USERS_COLLECTION = "users"
         private const val DRAFT_PAGES_COLLECTION = "binderDraftPages"
         private const val PUBLISHED_PAGES_COLLECTION = "binderPublishedPages"
+        private const val LIKES_COLLECTION = "likes"
+        private const val COMMENTS_COLLECTION = "comments"
 
         private const val FIELD_OWNER_USER_ID = "ownerUserId"
+        private const val FIELD_CREATOR_USERNAME = "creatorUsername"
         private const val FIELD_TITLE = "title"
         private const val FIELD_SLOTS = "slots"
         private const val FIELD_STATUS = "status"

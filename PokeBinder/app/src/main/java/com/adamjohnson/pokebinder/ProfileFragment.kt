@@ -10,13 +10,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
-import com.adamjohnson.pokebinder.data.model.BinderPage
 import com.adamjohnson.pokebinder.data.model.User
-import com.adamjohnson.pokebinder.ui.detail.PageDetailFragment
-import com.adamjohnson.pokebinder.ui.feed.FeedAdapter
+import com.adamjohnson.pokebinder.ui.feed.SocialPagesFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.ProfileViewModel
 
@@ -24,91 +20,86 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private val profileViewModel: ProfileViewModel by viewModels()
 
-    private lateinit var feedAdapter: FeedAdapter
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val displayNameTextView: TextView = view.findViewById(R.id.displayNameTextView)
         val signedInMessageTextView: TextView = view.findViewById(R.id.signedInMessageTextView)
+        val displayNameTextView: TextView = view.findViewById(R.id.displayNameTextView)
+        val emailTextView: TextView = view.findViewById(R.id.emailTextView)
+        val publishedPagesCountTextView: TextView =
+            view.findViewById(R.id.publishedPagesCountTextView)
+        val likesReceivedCountTextView: TextView =
+            view.findViewById(R.id.likesReceivedCountTextView)
+        val commentsReceivedCountTextView: TextView =
+            view.findViewById(R.id.commentsReceivedCountTextView)
+        val profileMessageTextView: TextView = view.findViewById(R.id.profileMessageTextView)
+        val yourLikesButton: Button = view.findViewById(R.id.yourLikesButton)
+        val yourCommentsButton: Button = view.findViewById(R.id.yourCommentsButton)
         val signOutButton: Button = view.findViewById(R.id.signOutButton)
-        val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
-        val profileRecyclerView: RecyclerView = view.findViewById(R.id.profileRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
-        val emptyStateView: View = view.findViewById(R.id.emptyStateView)
-        val emptyTitleTextView: TextView = view.findViewById(R.id.emptyTitleTextView)
-        val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
-        feedAdapter = FeedAdapter { binderPage ->
-            openPublishedPageDetail(binderPage)
+        yourLikesButton.setOnClickListener {
+            openSocialPages(SocialPagesFragment.MODE_LIKES)
         }
 
-        profileRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        profileRecyclerView.adapter = feedAdapter
+        yourCommentsButton.setOnClickListener {
+            openSocialPages(SocialPagesFragment.MODE_COMMENTS)
+        }
 
         signOutButton.setOnClickListener {
-            signOutButton.isEnabled = false
             profileViewModel.signOut()
+            navigateToLogin()
         }
 
         profileViewModel.currentUser.observe(viewLifecycleOwner) { user ->
-            if (user == null) {
-                renderSignedOut(
-                    displayNameTextView = displayNameTextView,
-                    signedInMessageTextView = signedInMessageTextView,
-                    signOutButton = signOutButton,
-                    resultCountTextView = resultCountTextView,
-                    profileRecyclerView = profileRecyclerView,
-                    loadingView = loadingView,
-                    emptyStateView = emptyStateView
-                )
-                navigateToLogin()
-            } else {
-                renderUser(
-                    user = user,
-                    displayNameTextView = displayNameTextView,
-                    signedInMessageTextView = signedInMessageTextView,
-                    signOutButton = signOutButton
-                )
-            }
+            renderCurrentUser(
+                user = user,
+                signedInMessageTextView = signedInMessageTextView,
+                displayNameTextView = displayNameTextView,
+                emailTextView = emailTextView,
+                yourLikesButton = yourLikesButton,
+                yourCommentsButton = yourCommentsButton,
+                signOutButton = signOutButton
+            )
         }
 
-        profileViewModel.publishedPagesState.observe(viewLifecycleOwner) { state ->
-            if (profileViewModel.currentUser.value == null) {
-                return@observe
-            }
-
+        profileViewModel.summaryState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 UiState.Loading -> {
                     renderLoading(
-                        resultCountTextView = resultCountTextView,
-                        profileRecyclerView = profileRecyclerView,
-                        loadingView = loadingView,
-                        emptyStateView = emptyStateView
+                        publishedPagesCountTextView = publishedPagesCountTextView,
+                        likesReceivedCountTextView = likesReceivedCountTextView,
+                        commentsReceivedCountTextView = commentsReceivedCountTextView,
+                        profileMessageTextView = profileMessageTextView,
+                        yourLikesButton = yourLikesButton,
+                        yourCommentsButton = yourCommentsButton,
+                        loadingView = loadingView
                     )
                 }
 
                 is UiState.Success -> {
-                    renderSuccess(
-                        publishedPages = state.data,
-                        resultCountTextView = resultCountTextView,
-                        profileRecyclerView = profileRecyclerView,
-                        loadingView = loadingView,
-                        emptyStateView = emptyStateView,
-                        emptyTitleTextView = emptyTitleTextView,
-                        emptyMessageTextView = emptyMessageTextView
+                    renderSummary(
+                        summary = state.data,
+                        publishedPagesCountTextView = publishedPagesCountTextView,
+                        likesReceivedCountTextView = likesReceivedCountTextView,
+                        commentsReceivedCountTextView = commentsReceivedCountTextView,
+                        profileMessageTextView = profileMessageTextView,
+                        yourLikesButton = yourLikesButton,
+                        yourCommentsButton = yourCommentsButton,
+                        loadingView = loadingView
                     )
                 }
 
                 is UiState.Error -> {
-                    renderError(
+                    renderSummaryError(
                         message = state.message,
-                        resultCountTextView = resultCountTextView,
-                        profileRecyclerView = profileRecyclerView,
-                        loadingView = loadingView,
-                        emptyStateView = emptyStateView,
-                        emptyTitleTextView = emptyTitleTextView,
-                        emptyMessageTextView = emptyMessageTextView
+                        publishedPagesCountTextView = publishedPagesCountTextView,
+                        likesReceivedCountTextView = likesReceivedCountTextView,
+                        commentsReceivedCountTextView = commentsReceivedCountTextView,
+                        profileMessageTextView = profileMessageTextView,
+                        yourLikesButton = yourLikesButton,
+                        yourCommentsButton = yourCommentsButton,
+                        loadingView = loadingView
                     )
                 }
             }
@@ -120,105 +111,114 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         profileViewModel.loadProfile()
     }
 
-    private fun renderUser(
-        user: User,
-        displayNameTextView: TextView,
+    private fun renderCurrentUser(
+        user: User?,
         signedInMessageTextView: TextView,
+        displayNameTextView: TextView,
+        emailTextView: TextView,
+        yourLikesButton: Button,
+        yourCommentsButton: Button,
         signOutButton: Button
     ) {
-        displayNameTextView.text = user.displayName.ifBlank {
-            getString(R.string.profile_display_name_fallback)
-        }
-        signedInMessageTextView.text = getString(R.string.profile_signed_in_message)
-        signOutButton.isEnabled = true
-    }
-
-    private fun renderSignedOut(
-        displayNameTextView: TextView,
-        signedInMessageTextView: TextView,
-        signOutButton: Button,
-        resultCountTextView: TextView,
-        profileRecyclerView: RecyclerView,
-        loadingView: View,
-        emptyStateView: View
-    ) {
-        displayNameTextView.text = getString(R.string.profile_display_name_fallback)
-        signedInMessageTextView.text = getString(R.string.profile_signed_out_message)
-        signOutButton.isEnabled = false
-
-        feedAdapter.submitList(emptyList())
-        resultCountTextView.text = getString(R.string.profile_results_default)
-        profileRecyclerView.visibility = View.GONE
-        loadingView.visibility = View.GONE
-        emptyStateView.visibility = View.GONE
-    }
-
-    private fun openPublishedPageDetail(binderPage: BinderPage) {
-        val pageId = binderPage.pageId.trim()
-        if (pageId.isBlank()) {
+        if (user == null || user.userId.isBlank()) {
+            signedInMessageTextView.text = "You must be signed in to view your profile."
+            displayNameTextView.text = "PokeBinder User"
+            emailTextView.text = ""
+            emailTextView.visibility = View.GONE
+            yourLikesButton.isEnabled = false
+            yourCommentsButton.isEnabled = false
+            signOutButton.isEnabled = false
             return
         }
 
-        if (findNavController().currentDestination?.id == R.id.profileFragment) {
-            findNavController().navigate(
-                R.id.pageDetailFragment,
-                bundleOf(PageDetailFragment.ARG_PAGE_ID to pageId)
-            )
+        val username = user.username.trim().ifBlank { "PokeBinder User" }
+        val email = user.email.trim()
+
+        signedInMessageTextView.text = if (email.isBlank()) {
+            "You are signed into PokeBinder as $username."
+        } else {
+            "You are signed into PokeBinder as $username ($email)."
         }
+
+        displayNameTextView.text = username
+
+        if (email.isBlank()) {
+            emailTextView.text = ""
+            emailTextView.visibility = View.GONE
+        } else {
+            emailTextView.text = "Email: $email"
+            emailTextView.visibility = View.VISIBLE
+        }
+
+        yourLikesButton.isEnabled = true
+        yourCommentsButton.isEnabled = true
+        signOutButton.isEnabled = true
     }
 
     private fun renderLoading(
-        resultCountTextView: TextView,
-        profileRecyclerView: RecyclerView,
-        loadingView: View,
-        emptyStateView: View
+        publishedPagesCountTextView: TextView,
+        likesReceivedCountTextView: TextView,
+        commentsReceivedCountTextView: TextView,
+        profileMessageTextView: TextView,
+        yourLikesButton: Button,
+        yourCommentsButton: Button,
+        loadingView: View
     ) {
-        resultCountTextView.text = getString(R.string.profile_results_default)
-        profileRecyclerView.visibility = View.GONE
+        publishedPagesCountTextView.text = "0"
+        likesReceivedCountTextView.text = "0"
+        commentsReceivedCountTextView.text = "0"
+        profileMessageTextView.visibility = View.GONE
+        yourLikesButton.isEnabled = false
+        yourCommentsButton.isEnabled = false
         loadingView.visibility = View.VISIBLE
-        emptyStateView.visibility = View.GONE
     }
 
-    private fun renderSuccess(
-        publishedPages: List<BinderPage>,
-        resultCountTextView: TextView,
-        profileRecyclerView: RecyclerView,
-        loadingView: View,
-        emptyStateView: View,
-        emptyTitleTextView: TextView,
-        emptyMessageTextView: TextView
+    private fun renderSummary(
+        summary: ProfileViewModel.ProfileSummary,
+        publishedPagesCountTextView: TextView,
+        likesReceivedCountTextView: TextView,
+        commentsReceivedCountTextView: TextView,
+        profileMessageTextView: TextView,
+        yourLikesButton: Button,
+        yourCommentsButton: Button,
+        loadingView: View
     ) {
-        feedAdapter.submitList(publishedPages)
-        resultCountTextView.text = getString(R.string.profile_results_label, publishedPages.size)
+        publishedPagesCountTextView.text = summary.publishedPageCount.toString()
+        likesReceivedCountTextView.text = summary.likesReceivedCount.toString()
+        commentsReceivedCountTextView.text = summary.commentsReceivedCount.toString()
+        profileMessageTextView.visibility = View.GONE
+        yourLikesButton.isEnabled = true
+        yourCommentsButton.isEnabled = true
         loadingView.visibility = View.GONE
-
-        if (publishedPages.isEmpty()) {
-            profileRecyclerView.visibility = View.GONE
-            emptyStateView.visibility = View.VISIBLE
-            emptyTitleTextView.text = getString(R.string.profile_empty_title)
-            emptyMessageTextView.text = getString(R.string.profile_empty_message)
-        } else {
-            profileRecyclerView.visibility = View.VISIBLE
-            emptyStateView.visibility = View.GONE
-        }
     }
 
-    private fun renderError(
+    private fun renderSummaryError(
         message: String,
-        resultCountTextView: TextView,
-        profileRecyclerView: RecyclerView,
-        loadingView: View,
-        emptyStateView: View,
-        emptyTitleTextView: TextView,
-        emptyMessageTextView: TextView
+        publishedPagesCountTextView: TextView,
+        likesReceivedCountTextView: TextView,
+        commentsReceivedCountTextView: TextView,
+        profileMessageTextView: TextView,
+        yourLikesButton: Button,
+        yourCommentsButton: Button,
+        loadingView: View
     ) {
-        feedAdapter.submitList(emptyList())
-        resultCountTextView.text = getString(R.string.profile_results_default)
-        profileRecyclerView.visibility = View.GONE
+        publishedPagesCountTextView.text = "0"
+        likesReceivedCountTextView.text = "0"
+        commentsReceivedCountTextView.text = "0"
+        profileMessageTextView.text = message
+        profileMessageTextView.visibility = View.VISIBLE
+        yourLikesButton.isEnabled = true
+        yourCommentsButton.isEnabled = true
         loadingView.visibility = View.GONE
-        emptyStateView.visibility = View.VISIBLE
-        emptyTitleTextView.text = getString(R.string.profile_error_title)
-        emptyMessageTextView.text = message
+    }
+
+    private fun openSocialPages(mode: String) {
+        if (findNavController().currentDestination?.id == R.id.profileFragment) {
+            findNavController().navigate(
+                R.id.socialPagesFragment,
+                bundleOf(SocialPagesFragment.ARG_LIST_MODE to mode)
+            )
+        }
     }
 
     private fun navigateToLogin() {

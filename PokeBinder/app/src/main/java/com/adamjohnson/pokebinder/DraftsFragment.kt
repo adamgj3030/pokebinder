@@ -2,16 +2,25 @@ package com.adamjohnson.pokebinder.ui.drafts
 
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
+import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
+import com.adamjohnson.pokebinder.data.model.BinderPageStatus
+import com.adamjohnson.pokebinder.data.repository.CardRepository
 import com.adamjohnson.pokebinder.ui.binder.BinderEditorFragment
+import com.adamjohnson.pokebinder.ui.detail.PageDetailFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.DraftsViewModel
 
@@ -19,11 +28,19 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
     private val draftsViewModel: DraftsViewModel by viewModels()
 
+    private val cardRepository by lazy {
+        CardRepository(PokemonCardLocalDataSource(requireContext().applicationContext))
+    }
+
     private lateinit var draftsAdapter: DraftsAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val totalBindersCountTextView: TextView = view.findViewById(R.id.totalBindersCountTextView)
+        val totalLikesCountTextView: TextView = view.findViewById(R.id.totalLikesCountTextView)
+        val searchEditText: EditText = view.findViewById(R.id.searchEditText)
+        val filterRadioGroup: RadioGroup = view.findViewById(R.id.filterRadioGroup)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val draftsRecyclerView: RecyclerView = view.findViewById(R.id.draftsRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
@@ -31,17 +48,36 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         val emptyTitleTextView: TextView = view.findViewById(R.id.emptyTitleTextView)
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
-        draftsAdapter = DraftsAdapter { binderPage ->
-            openDraftInEditor(binderPage)
-        }
+        draftsAdapter = DraftsAdapter(
+            cardRepository = cardRepository,
+            onCreateNewClick = { openCreateNewBinder() },
+            onBinderClick = { binderPage -> openBinder(binderPage) },
+            onDeleteClick = { binderPage -> confirmDeleteBinder(binderPage) }
+        )
 
         draftsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         draftsRecyclerView.adapter = draftsAdapter
 
-        draftsViewModel.draftsState.observe(viewLifecycleOwner) { state ->
+        searchEditText.doAfterTextChanged { editable ->
+            draftsViewModel.updateSearchQuery(editable?.toString().orEmpty())
+        }
+
+        filterRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val filter = when (checkedId) {
+                R.id.draftsOnlyRadioButton -> DraftsViewModel.BinderFilter.DRAFTS
+                R.id.publishedOnlyRadioButton -> DraftsViewModel.BinderFilter.PUBLISHED
+                else -> DraftsViewModel.BinderFilter.ALL
+            }
+
+            draftsViewModel.updateFilter(filter)
+        }
+
+        draftsViewModel.bindersState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 UiState.Loading -> {
                     renderLoading(
+                        totalBindersCountTextView = totalBindersCountTextView,
+                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
@@ -51,19 +87,23 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
                 is UiState.Success -> {
                     renderSuccess(
-                        draftPages = state.data,
+                        screenState = state.data,
+                        searchEditText = searchEditText,
+                        filterRadioGroup = filterRadioGroup,
+                        totalBindersCountTextView = totalBindersCountTextView,
+                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
-                        emptyStateView = emptyStateView,
-                        emptyTitleTextView = emptyTitleTextView,
-                        emptyMessageTextView = emptyMessageTextView
+                        emptyStateView = emptyStateView
                     )
                 }
 
                 is UiState.Error -> {
                     renderError(
                         message = state.message,
+                        totalBindersCountTextView = totalBindersCountTextView,
+                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
@@ -78,60 +118,128 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
     override fun onResume() {
         super.onResume()
-        draftsViewModel.loadDraftPages()
+        draftsViewModel.loadBinderPages()
     }
 
-    private fun openDraftInEditor(binderPage: BinderPage) {
-        if (binderPage.pageId.isBlank()) {
-            return
-        }
-
+    private fun openCreateNewBinder() {
         if (findNavController().currentDestination?.id == R.id.draftsFragment) {
             findNavController().navigate(
                 R.id.binderEditorFragment,
-                bundleOf(BinderEditorFragment.ARG_PAGE_ID to binderPage.pageId)
+                bundleOf(BinderEditorFragment.ARG_PAGE_ID to null)
             )
         }
     }
 
+    private fun openBinder(binderPage: BinderPage) {
+        if (binderPage.pageId.isBlank()) {
+            return
+        }
+
+        if (binderPage.status == BinderPageStatus.PUBLISHED) {
+            openPublishedPageDetail(binderPage.pageId)
+        } else {
+            openDraftInEditor(binderPage.pageId)
+        }
+    }
+
+    private fun openDraftInEditor(pageId: String) {
+        if (findNavController().currentDestination?.id == R.id.draftsFragment) {
+            findNavController().navigate(
+                R.id.binderEditorFragment,
+                bundleOf(BinderEditorFragment.ARG_PAGE_ID to pageId)
+            )
+        }
+    }
+
+    private fun openPublishedPageDetail(pageId: String) {
+        if (findNavController().currentDestination?.id == R.id.draftsFragment) {
+            findNavController().navigate(
+                R.id.pageDetailFragment,
+                bundleOf(PageDetailFragment.ARG_PAGE_ID to pageId)
+            )
+        }
+    }
+
+    private fun confirmDeleteBinder(binderPage: BinderPage) {
+        if (binderPage.pageId.isBlank()) {
+            return
+        }
+
+        val title = binderPage.title.ifBlank {
+            getString(R.string.binders_item_untitled)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.binders_delete_title))
+            .setMessage(getString(R.string.binders_delete_message, title))
+            .setNegativeButton(R.string.binders_delete_cancel, null)
+            .setPositiveButton(R.string.binders_delete_confirm) { _, _ ->
+                deleteBinder(binderPage)
+            }
+            .show()
+    }
+
+    private fun deleteBinder(binderPage: BinderPage) {
+        draftsViewModel.deleteBinderPage(binderPage) { errorMessage ->
+            if (!isAdded) {
+                return@deleteBinderPage
+            }
+
+            val message = errorMessage ?: getString(R.string.binders_delete_success)
+            showShortToast(message)
+        }
+    }
+
     private fun renderLoading(
+        totalBindersCountTextView: TextView,
+        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
         emptyStateView: View
     ) {
-        resultCountTextView.text = getString(R.string.drafts_results_default)
+        totalBindersCountTextView.text = getString(R.string.binders_metric_zero)
+        totalLikesCountTextView.text = getString(R.string.binders_metric_zero)
+        resultCountTextView.text = getString(R.string.binders_results_default)
         draftsRecyclerView.visibility = View.GONE
         loadingView.visibility = View.VISIBLE
         emptyStateView.visibility = View.GONE
     }
 
     private fun renderSuccess(
-        draftPages: List<BinderPage>,
+        screenState: DraftsViewModel.BindersScreenState,
+        searchEditText: EditText,
+        filterRadioGroup: RadioGroup,
+        totalBindersCountTextView: TextView,
+        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
-        emptyStateView: View,
-        emptyTitleTextView: TextView,
-        emptyMessageTextView: TextView
+        emptyStateView: View
     ) {
-        draftsAdapter.submitList(draftPages)
-        resultCountTextView.text = getString(R.string.drafts_results_label, draftPages.size)
-        loadingView.visibility = View.GONE
+        syncSearchAndFilter(
+            searchEditText = searchEditText,
+            filterRadioGroup = filterRadioGroup,
+            screenState = screenState
+        )
 
-        if (draftPages.isEmpty()) {
-            draftsRecyclerView.visibility = View.GONE
-            emptyStateView.visibility = View.VISIBLE
-            emptyTitleTextView.text = getString(R.string.drafts_empty_title)
-            emptyMessageTextView.text = getString(R.string.drafts_empty_message)
-        } else {
-            draftsRecyclerView.visibility = View.VISIBLE
-            emptyStateView.visibility = View.GONE
-        }
+        draftsAdapter.submitList(screenState.binders)
+        totalBindersCountTextView.text = screenState.summary.totalBindersCount.toString()
+        totalLikesCountTextView.text = screenState.summary.totalLikesCount.toString()
+        resultCountTextView.text = getString(
+            R.string.binders_results_label,
+            screenState.binders.size
+        )
+
+        draftsRecyclerView.visibility = View.VISIBLE
+        loadingView.visibility = View.GONE
+        emptyStateView.visibility = View.GONE
     }
 
     private fun renderError(
         message: String,
+        totalBindersCountTextView: TextView,
+        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
@@ -140,11 +248,42 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         emptyMessageTextView: TextView
     ) {
         draftsAdapter.submitList(emptyList())
-        resultCountTextView.text = getString(R.string.drafts_results_default)
+        totalBindersCountTextView.text = getString(R.string.binders_metric_zero)
+        totalLikesCountTextView.text = getString(R.string.binders_metric_zero)
+        resultCountTextView.text = getString(R.string.binders_results_default)
         draftsRecyclerView.visibility = View.GONE
         loadingView.visibility = View.GONE
         emptyStateView.visibility = View.VISIBLE
-        emptyTitleTextView.text = getString(R.string.drafts_error_title)
+        emptyTitleTextView.text = getString(R.string.binders_error_title)
         emptyMessageTextView.text = message
+    }
+
+    private fun syncSearchAndFilter(
+        searchEditText: EditText,
+        filterRadioGroup: RadioGroup,
+        screenState: DraftsViewModel.BindersScreenState
+    ) {
+        if (searchEditText.text.toString() != screenState.searchQuery) {
+            searchEditText.setText(screenState.searchQuery)
+            searchEditText.setSelection(screenState.searchQuery.length)
+        }
+
+        val radioButtonId = when (screenState.filter) {
+            DraftsViewModel.BinderFilter.ALL -> R.id.allRadioButton
+            DraftsViewModel.BinderFilter.DRAFTS -> R.id.draftsOnlyRadioButton
+            DraftsViewModel.BinderFilter.PUBLISHED -> R.id.publishedOnlyRadioButton
+        }
+
+        if (filterRadioGroup.checkedRadioButtonId != radioButtonId) {
+            filterRadioGroup.check(radioButtonId)
+        }
+    }
+
+    private fun showShortToast(message: String) {
+        if (!isAdded) {
+            return
+        }
+
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

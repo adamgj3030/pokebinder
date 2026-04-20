@@ -4,39 +4,24 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
 import com.adamjohnson.pokebinder.data.model.BinderPageStatus
 import com.adamjohnson.pokebinder.data.model.BinderSlot
-import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
 import com.adamjohnson.pokebinder.data.repository.BinderPageRepository
-import com.adamjohnson.pokebinder.data.repository.CardRepository
-import com.adamjohnson.pokebinder.data.repository.CollectionRepository
 import com.adamjohnson.pokebinder.utils.UiState
 
 class BinderEditorViewModel(application: Application) : AndroidViewModel(application) {
 
     private val authRepository = AuthRepository()
     private val binderPageRepository = BinderPageRepository()
-    private val collectionRepository = CollectionRepository()
-    private val cardRepository = CardRepository(
-        PokemonCardLocalDataSource(application.applicationContext)
-    )
 
-    private var currentBinderPage = BinderPage()
+    private var currentBinderPage = emptyDraftPage()
     private var hasInitialized = false
     private var initializedPageId: String? = null
 
     private val _binderPageState = MutableLiveData<UiState<BinderPage>>(UiState.Loading)
     val binderPageState: LiveData<UiState<BinderPage>> = _binderPageState
-
-    private val _availableCardsState =
-        MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
-    val availableCardsState: LiveData<UiState<List<PokemonCard>>> = _availableCardsState
-
-    private val _selectedSlotIndex = MutableLiveData<Int?>(null)
-    val selectedSlotIndex: LiveData<Int?> = _selectedSlotIndex
 
     private val _canPublish = MutableLiveData(false)
     val canPublish: LiveData<Boolean> = _canPublish
@@ -50,8 +35,6 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         hasInitialized = true
         initializedPageId = normalizedPageId
-
-        loadAvailableCards()
 
         if (normalizedPageId == null) {
             startNewDraft()
@@ -67,8 +50,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         val userId = authRepository.getCurrentUserId()
 
         if (userId.isNullOrBlank()) {
-            currentBinderPage = BinderPage()
-            _selectedSlotIndex.value = null
+            currentBinderPage = emptyDraftPage()
             updateCanPublish()
 
             val errorMessage = "You must be signed in to create a binder draft."
@@ -77,72 +59,19 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             return
         }
 
-        val newBinderPage = BinderPage(
-            ownerUserId = userId,
+        val newBinderPage = emptyDraftPage(
+            userId = userId,
             title = title.trim()
         )
 
-        initializedPageId = null
         currentBinderPage = newBinderPage
-        _selectedSlotIndex.value = null
         updateCanPublish()
         _binderPageState.value = UiState.Success(newBinderPage)
-
         onResult(newBinderPage, null)
     }
 
-    fun loadEditorPage(
-        pageId: String,
-        onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
-    ) {
-        val userId = authRepository.getCurrentUserId()
-
-        if (userId.isNullOrBlank()) {
-            currentBinderPage = BinderPage()
-            _selectedSlotIndex.value = null
-            updateCanPublish()
-
-            val errorMessage = "You must be signed in to view this binder page."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
-            return
-        }
-
-        if (pageId.isBlank()) {
-            currentBinderPage = BinderPage()
-            _selectedSlotIndex.value = null
-            updateCanPublish()
-
-            val errorMessage = "Invalid page."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
-            return
-        }
-
-        _selectedSlotIndex.value = null
-        _binderPageState.value = UiState.Loading
-
-        binderPageRepository.getEditorPage(userId, pageId) { binderPage, errorMessage ->
-            if (binderPage != null) {
-                currentBinderPage = binderPage
-                initializedPageId = binderPage.pageId.takeIf { it.isNotBlank() }
-                updateCanPublish()
-                _binderPageState.postValue(UiState.Success(binderPage))
-            } else {
-                currentBinderPage = BinderPage()
-                _selectedSlotIndex.postValue(null)
-                updateCanPublish()
-                _binderPageState.postValue(
-                    UiState.Error(errorMessage ?: "Unable to load binder page.")
-                )
-            }
-
-            onResult(binderPage, errorMessage)
-        }
-    }
-
     fun updateTitle(title: String) {
-        if (!isCurrentPageEditable()) {
+        if (!isCurrentPageEditable() || isRequestInProgress()) {
             return
         }
 
@@ -151,63 +80,9 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         )
     }
 
-    fun selectSlot(slotIndex: Int) {
-        if (!isCurrentPageEditable()) {
-            return
-        }
-
-        if (slotIndex !in 0 until SLOT_COUNT) {
-            return
-        }
-
-        _selectedSlotIndex.value = slotIndex
-    }
-
-    fun assignCardToSelectedSlot(cardId: String) {
-        if (!isCurrentPageEditable()) {
-            return
-        }
-
-        val trimmedCardId = cardId.trim()
-
-        if (trimmedCardId.isBlank()) {
-            return
-        }
-
-        val availableCards = when (val state = _availableCardsState.value) {
-            is UiState.Success -> state.data
-            else -> emptyList()
-        }
-
-        if (availableCards.none { it.cardId == trimmedCardId }) {
-            return
-        }
-
-        updateSelectedSlotCard(trimmedCardId)
-    }
-
-    fun clearSelectedSlot() {
-        if (!isCurrentPageEditable()) {
-            return
-        }
-
-        updateSelectedSlotCard(null)
-    }
-
     fun saveCurrentDraft(
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
-        if (isRequestInProgress()) {
-            return
-        }
-
-        if (!isCurrentPageEditable()) {
-            val errorMessage = "Published pages are read-only."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
-            return
-        }
-
         val userId = authRepository.getCurrentUserId()
 
         if (userId.isNullOrBlank()) {
@@ -217,10 +92,14 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
             return
         }
 
-        if (currentBinderPage.ownerUserId.isNotBlank() && currentBinderPage.ownerUserId != userId) {
-            val errorMessage = "Invalid user."
+        if (!isCurrentPageEditable()) {
+            val errorMessage = "Published binders are read-only."
             _binderPageState.value = UiState.Error(errorMessage)
             onResult(null, errorMessage)
+            return
+        }
+
+        if (isRequestInProgress()) {
             return
         }
 
@@ -228,13 +107,13 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         binderPageRepository.saveDraftPage(userId, currentBinderPage) { savedBinderPage, errorMessage ->
             if (savedBinderPage != null) {
-                currentBinderPage = savedBinderPage
-                initializedPageId = savedBinderPage.pageId.takeIf { it.isNotBlank() }
+                currentBinderPage = normalizeBinderPage(savedBinderPage)
+                initializedPageId = currentBinderPage.pageId.takeIf { it.isNotBlank() }
                 updateCanPublish()
-                _binderPageState.postValue(UiState.Success(savedBinderPage))
+                _binderPageState.postValue(UiState.Success(currentBinderPage))
             } else {
                 _binderPageState.postValue(
-                    UiState.Error(errorMessage ?: "Unable to save draft page.")
+                    UiState.Error(errorMessage ?: "Unable to save draft binder.")
                 )
             }
 
@@ -242,44 +121,33 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun canPublishCurrentPage(): Boolean {
-        return calculateCanPublish(currentBinderPage)
-    }
-
     fun publishCurrentPage(
         onResult: (BinderPage?, String?) -> Unit = { _, _ -> }
     ) {
-        if (isRequestInProgress()) {
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId.isNullOrBlank()) {
+            val errorMessage = "You must be signed in to publish a binder."
+            _binderPageState.value = UiState.Error(errorMessage)
+            onResult(null, errorMessage)
             return
         }
 
         if (!isCurrentPageEditable()) {
-            val errorMessage = "Published pages are read-only."
+            val errorMessage = "Published binders are read-only."
             _binderPageState.value = UiState.Error(errorMessage)
             onResult(null, errorMessage)
             return
         }
 
-        val userId = authRepository.getCurrentUserId()
-
-        if (userId.isNullOrBlank()) {
-            val errorMessage = "You must be signed in to publish a binder page."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
+        if (isRequestInProgress()) {
             return
         }
 
-        if (currentBinderPage.ownerUserId.isNotBlank() && currentBinderPage.ownerUserId != userId) {
-            val errorMessage = "Invalid user."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
-            return
-        }
-
-        if (!canPublishCurrentPage()) {
-            val errorMessage = "All 9 slots must be filled before publishing."
-            _binderPageState.value = UiState.Error(errorMessage)
-            onResult(null, errorMessage)
+        val validationMessage = getPublishValidationMessage()
+        if (validationMessage != null) {
+            _binderPageState.value = UiState.Error(validationMessage)
+            onResult(null, validationMessage)
             return
         }
 
@@ -287,14 +155,13 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         binderPageRepository.publishPage(userId, currentBinderPage) { publishedBinderPage, errorMessage ->
             if (publishedBinderPage != null) {
-                currentBinderPage = publishedBinderPage
-                initializedPageId = publishedBinderPage.pageId.takeIf { it.isNotBlank() }
-                _selectedSlotIndex.postValue(null)
+                currentBinderPage = normalizeBinderPage(publishedBinderPage)
+                initializedPageId = currentBinderPage.pageId.takeIf { it.isNotBlank() }
                 updateCanPublish()
-                _binderPageState.postValue(UiState.Success(publishedBinderPage))
+                _binderPageState.postValue(UiState.Success(currentBinderPage))
             } else {
                 _binderPageState.postValue(
-                    UiState.Error(errorMessage ?: "Unable to publish binder page.")
+                    UiState.Error(errorMessage ?: "Unable to publish binder.")
                 )
             }
 
@@ -302,50 +169,21 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun loadAvailableCards() {
-        val userId = authRepository.getCurrentUserId()
-
-        if (userId.isNullOrBlank()) {
-            _availableCardsState.value =
-                UiState.Error("You must be signed in to load editor cards.")
-            return
-        }
-
-        _availableCardsState.value = UiState.Loading
-
-        collectionRepository.getSavedCards(userId) { savedCards, errorMessage ->
-            if (savedCards != null) {
-                try {
-                    val cards = savedCards.mapNotNull { savedCard ->
-                        cardRepository.getPokemonCard(savedCard.cardId)
-                    }
-                    _availableCardsState.postValue(UiState.Success(cards))
-                } catch (exception: Exception) {
-                    _availableCardsState.postValue(
-                        UiState.Error("Unable to load editor cards.")
-                    )
-                }
-            } else {
-                _availableCardsState.postValue(
-                    UiState.Error(errorMessage ?: "Unable to load editor cards.")
-                )
-            }
+    fun getEmptySlotCount(): Int {
+        return normalizeSlots(currentBinderPage.slots).count { slot ->
+            slot.cardId.isNullOrBlank()
         }
     }
 
-    private fun updateSelectedSlotCard(cardId: String?) {
-        val selectedIndex = _selectedSlotIndex.value
-
-        if (selectedIndex == null || selectedIndex !in 0 until SLOT_COUNT) {
+    fun removeCardFromSlot(slotIndex: Int) {
+        if (!isCurrentPageEditable() || isRequestInProgress()) {
             return
         }
 
-        val updatedSlots = currentBinderPage.slots.map { slot ->
-            if (slot.index == selectedIndex) {
-                BinderSlot(
-                    index = slot.index,
-                    cardId = cardId
-                )
+        val normalizedIndex = normalizeSlotIndex(slotIndex)
+        val updatedSlots = normalizeSlots(currentBinderPage.slots).mapIndexed { index, slot ->
+            if (index == normalizedIndex) {
+                slot.copy(cardId = null)
             } else {
                 slot
             }
@@ -356,22 +194,147 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         )
     }
 
+    fun addCardsFromSlot(startSlotIndex: Int, cardIds: List<String>) {
+        if (!isCurrentPageEditable() || isRequestInProgress()) {
+            return
+        }
+
+        val normalizedCardIds = cardIds.map { it.trim() }.filter { it.isNotBlank() }
+        if (normalizedCardIds.isEmpty()) {
+            return
+        }
+
+        val updatedSlots = normalizeSlots(currentBinderPage.slots).toMutableList()
+        var slotPointer = normalizeSlotIndex(startSlotIndex)
+
+        normalizedCardIds.forEach { cardId ->
+            var checkedSlots = 0
+
+            while (
+                checkedSlots < SLOT_COUNT &&
+                !updatedSlots[slotPointer].cardId.isNullOrBlank()
+            ) {
+                slotPointer = (slotPointer + 1) % SLOT_COUNT
+                checkedSlots += 1
+            }
+
+            if (checkedSlots == SLOT_COUNT) {
+                return@forEach
+            }
+
+            updatedSlots[slotPointer] = updatedSlots[slotPointer].copy(cardId = cardId)
+            slotPointer = (slotPointer + 1) % SLOT_COUNT
+        }
+
+        updateCurrentBinderPage(
+            currentBinderPage.copy(slots = updatedSlots)
+        )
+    }
+
+    private fun loadEditorPage(pageId: String) {
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId.isNullOrBlank()) {
+            val errorMessage = "You must be signed in to load a binder draft."
+            currentBinderPage = emptyDraftPage()
+            updateCanPublish()
+            _binderPageState.value = UiState.Error(errorMessage)
+            return
+        }
+
+        _binderPageState.value = UiState.Loading
+
+        binderPageRepository.getDraftPage(userId, pageId) { binderPage, errorMessage ->
+            if (binderPage != null) {
+                currentBinderPage = normalizeBinderPage(binderPage)
+                updateCanPublish()
+                _binderPageState.postValue(UiState.Success(currentBinderPage))
+            } else {
+                currentBinderPage = emptyDraftPage(userId = userId)
+                updateCanPublish()
+                _binderPageState.postValue(
+                    UiState.Error(errorMessage ?: "Unable to load draft binder.")
+                )
+            }
+        }
+    }
+
     private fun updateCurrentBinderPage(updatedBinderPage: BinderPage) {
-        currentBinderPage = updatedBinderPage
+        currentBinderPage = normalizeBinderPage(updatedBinderPage)
         updateCanPublish()
-        _binderPageState.value = UiState.Success(updatedBinderPage)
+        _binderPageState.value = UiState.Success(currentBinderPage)
     }
 
     private fun updateCanPublish() {
-        _canPublish.value = calculateCanPublish(currentBinderPage)
+        _canPublish.value = canPublishCurrentPage()
     }
 
-    private fun calculateCanPublish(binderPage: BinderPage): Boolean {
-        return binderPage.status == BinderPageStatus.DRAFT &&
-                binderPage.slots.size == SLOT_COUNT &&
-                binderPage.slots.all { slot ->
-                    !slot.cardId.isNullOrBlank()
-                }
+    private fun canPublishCurrentPage(): Boolean {
+        return getPublishValidationMessage() == null
+    }
+
+    private fun getPublishValidationMessage(): String? {
+        if (currentBinderPage.status != BinderPageStatus.DRAFT) {
+            return "Published binders are read-only."
+        }
+
+        if (currentBinderPage.title.trim().isBlank()) {
+            return "A binder title is required before publishing."
+        }
+
+        val normalizedSlots = normalizeSlots(currentBinderPage.slots)
+        if (normalizedSlots.size != SLOT_COUNT) {
+            return "All 9 slots must be filled before publishing."
+        }
+
+        if (normalizedSlots.any { it.cardId.isNullOrBlank() }) {
+            return "All 9 slots must be filled before publishing."
+        }
+
+        return null
+    }
+
+    private fun normalizeBinderPage(binderPage: BinderPage): BinderPage {
+        return binderPage.copy(
+            title = binderPage.title.trim(),
+            slots = normalizeSlots(binderPage.slots)
+        )
+    }
+
+    private fun normalizeSlots(slots: List<BinderSlot>): List<BinderSlot> {
+        val slotsByIndex = slots.associateBy { it.index }
+
+        return List(SLOT_COUNT) { index ->
+            BinderSlot(
+                index = index,
+                cardId = slotsByIndex[index]?.cardId
+            )
+        }
+    }
+
+    private fun normalizeSlotIndex(slotIndex: Int): Int {
+        return when {
+            slotIndex < 0 -> 0
+            slotIndex >= SLOT_COUNT -> SLOT_COUNT - 1
+            else -> slotIndex
+        }
+    }
+
+    private fun emptyDraftPage(
+        userId: String = "",
+        title: String = ""
+    ): BinderPage {
+        return BinderPage(
+            ownerUserId = userId,
+            title = title,
+            status = BinderPageStatus.DRAFT,
+            slots = List(SLOT_COUNT) { index ->
+                BinderSlot(
+                    index = index,
+                    cardId = null
+                )
+            }
+        )
     }
 
     private fun isCurrentPageEditable(): Boolean {

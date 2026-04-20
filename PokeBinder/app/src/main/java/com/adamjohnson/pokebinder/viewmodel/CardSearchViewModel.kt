@@ -22,11 +22,29 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
     private val _cardsState = MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
     val cardsState: LiveData<UiState<List<PokemonCard>>> = _cardsState
 
-    private val _searchQuery = MutableLiveData("")
-    val searchQuery: LiveData<String> = _searchQuery
+    private val _nameQuery = MutableLiveData("")
+    val nameQuery: LiveData<String> = _nameQuery
+
+    private val _setQuery = MutableLiveData("")
+    val setQuery: LiveData<String> = _setQuery
+
+    private val _typeQuery = MutableLiveData("")
+    val typeQuery: LiveData<String> = _typeQuery
+
+    private val _cardIdQuery = MutableLiveData("")
+    val cardIdQuery: LiveData<String> = _cardIdQuery
 
     private val _savedCardIds = MutableLiveData<Set<String>>(emptySet())
     val savedCardIds: LiveData<Set<String>> = _savedCardIds
+
+    private val _nameSuggestions = MutableLiveData<List<String>>(emptyList())
+    val nameSuggestions: LiveData<List<String>> = _nameSuggestions
+
+    private val _setSuggestions = MutableLiveData<List<String>>(emptyList())
+    val setSuggestions: LiveData<List<String>> = _setSuggestions
+
+    private val _typeSuggestions = MutableLiveData<List<String>>(emptyList())
+    val typeSuggestions: LiveData<List<String>> = _typeSuggestions
 
     init {
         loadCards()
@@ -34,16 +52,35 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
 
     fun loadCards() {
         _cardsState.value = UiState.Loading
-        runSearch(_searchQuery.value.orEmpty())
+        runSearch()
     }
 
-    fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
-        runSearch(query)
+    fun updateNameQuery(query: String) {
+        _nameQuery.value = query
+        runSearch()
     }
 
-    fun clearSearch() {
-        updateSearchQuery("")
+    fun updateSetQuery(query: String) {
+        _setQuery.value = query
+        runSearch()
+    }
+
+    fun updateTypeQuery(query: String) {
+        _typeQuery.value = query
+        runSearch()
+    }
+
+    fun updateCardIdQuery(query: String) {
+        _cardIdQuery.value = query
+        runSearch()
+    }
+
+    fun clearFilters() {
+        _nameQuery.value = ""
+        _setQuery.value = ""
+        _typeQuery.value = ""
+        _cardIdQuery.value = ""
+        runSearch()
     }
 
     fun loadSavedCardIds() {
@@ -63,7 +100,7 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun saveCard(
+    fun toggleSavedCard(
         cardId: String,
         onResult: (String?) -> Unit = {}
     ) {
@@ -79,27 +116,52 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
             return
         }
 
-        if (_savedCardIds.value.orEmpty().contains(cardId)) {
-            onResult(null)
-            return
-        }
+        val currentSavedCardIds = _savedCardIds.value.orEmpty()
+        if (currentSavedCardIds.contains(cardId)) {
+            collectionRepository.removeCard(userId, cardId) { errorMessage ->
+                if (errorMessage == null) {
+                    _savedCardIds.postValue(currentSavedCardIds - cardId)
+                }
 
-        collectionRepository.saveCard(userId, cardId) { errorMessage ->
-            if (errorMessage == null) {
-                val updatedSavedCardIds = _savedCardIds.value.orEmpty() + cardId
-                _savedCardIds.postValue(updatedSavedCardIds)
+                onResult(errorMessage)
             }
+        } else {
+            collectionRepository.saveCard(userId, cardId) { errorMessage ->
+                if (errorMessage == null) {
+                    _savedCardIds.postValue(currentSavedCardIds + cardId)
+                }
 
-            onResult(errorMessage)
+                onResult(errorMessage)
+            }
         }
     }
 
-    private fun runSearch(query: String) {
+    private fun runSearch() {
         try {
-            val cards = cardRepository.searchPokemonCards(query)
+            val cards = cardRepository.filterPokemonCards(
+                nameQuery = _nameQuery.value.orEmpty(),
+                setQuery = _setQuery.value.orEmpty(),
+                typeQuery = _typeQuery.value.orEmpty(),
+                cardIdQuery = _cardIdQuery.value.orEmpty()
+            )
+
             _cardsState.value = UiState.Success(cards)
+            refreshSuggestions()
         } catch (exception: Exception) {
             _cardsState.value = UiState.Error("Unable to load cards.")
+            clearSuggestions()
         }
+    }
+
+    private fun refreshSuggestions() {
+        _nameSuggestions.value = cardRepository.getNameSuggestions(_nameQuery.value.orEmpty())
+        _setSuggestions.value = cardRepository.getSetSuggestions(_setQuery.value.orEmpty())
+        _typeSuggestions.value = cardRepository.getTypeSuggestions(_typeQuery.value.orEmpty())
+    }
+
+    private fun clearSuggestions() {
+        _nameSuggestions.value = emptyList()
+        _setSuggestions.value = emptyList()
+        _typeSuggestions.value = emptyList()
     }
 }

@@ -21,8 +21,13 @@ class UserRepository(
             "userId" to user.userId
         )
 
-        if (user.displayName.isNotBlank()) {
-            userData["displayName"] = user.displayName
+        if (user.username.isNotBlank()) {
+            userData["username"] = user.username
+            userData["displayName"] = user.username
+        }
+
+        if (user.email.isNotBlank()) {
+            userData["email"] = user.email
         }
 
         firestore.collection(USERS_COLLECTION)

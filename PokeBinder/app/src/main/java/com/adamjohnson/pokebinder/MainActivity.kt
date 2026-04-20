@@ -2,13 +2,11 @@ package com.adamjohnson.pokebinder
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
-import com.adamjohnson.pokebinder.ui.binder.BinderEditorFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -31,13 +29,9 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.feedFragment,
                 R.id.collectionFragment,
+                R.id.draftsFragment,
                 R.id.profileFragment -> {
                     navigateToTopLevelDestination(navController, item.itemId)
-                    true
-                }
-
-                R.id.binderEditorFragment -> {
-                    openBlankBinderEditor(navController)
                     true
                 }
 
@@ -80,18 +74,6 @@ class MainActivity : AppCompatActivity() {
         navController.navigate(destinationId, null, navOptions)
     }
 
-    private fun openBlankBinderEditor(navController: NavController) {
-        val navOptions = NavOptions.Builder()
-            .setLaunchSingleTop(true)
-            .build()
-
-        navController.navigate(
-            R.id.binderEditorFragment,
-            bundleOf(BinderEditorFragment.ARG_PAGE_ID to null),
-            navOptions
-        )
-    }
-
     private fun enforceAuthEntryDestination(navController: NavController) {
         val currentDestinationId = navController.currentDestination?.id ?: return
 
@@ -120,16 +102,21 @@ class MainActivity : AppCompatActivity() {
         when (destinationId) {
             R.id.feedFragment,
             R.id.collectionFragment,
+            R.id.draftsFragment,
             R.id.profileFragment -> {
                 bottomNavigationView.visibility = View.VISIBLE
                 bottomNavigationView.menu.findItem(destinationId)?.isChecked = true
             }
 
+            R.id.cardSearchFragment -> {
+                bottomNavigationView.visibility = View.VISIBLE
+                bottomNavigationView.menu.findItem(R.id.collectionFragment)?.isChecked = true
+            }
+
             R.id.loginFragment,
-            R.id.cardSearchFragment,
             R.id.binderEditorFragment,
-            R.id.draftsFragment,
-            R.id.pageDetailFragment -> {
+            R.id.pageDetailFragment,
+            R.id.socialPagesFragment -> {
                 bottomNavigationView.visibility = View.GONE
             }
 

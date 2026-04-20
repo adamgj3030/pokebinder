@@ -21,7 +21,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun refreshAuthState() {
-        _authState.value = UiState.Success(authRepository.getCurrentUser())
+        val user = authRepository.getCurrentUser()
+        if (user != null) {
+            bootstrapUser(user)
+        }
+        _authState.value = UiState.Success(user)
     }
 
     fun isSignedIn(): Boolean {
@@ -34,7 +38,7 @@ class AuthViewModel : ViewModel() {
 
     fun signIn(email: String, password: String) {
         val trimmedEmail = email.trim()
-        val validationMessage = validateCredentials(trimmedEmail, password)
+        val validationMessage = validateSignIn(trimmedEmail, password)
 
         if (validationMessage != null) {
             _authState.value = UiState.Error(validationMessage)
@@ -55,9 +59,10 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun createAccount(email: String, password: String) {
+    fun createAccount(email: String, password: String, username: String) {
         val trimmedEmail = email.trim()
-        val validationMessage = validateCredentials(trimmedEmail, password)
+        val trimmedUsername = username.trim()
+        val validationMessage = validateCreateAccount(trimmedUsername, trimmedEmail, password)
 
         if (validationMessage != null) {
             _authState.value = UiState.Error(validationMessage)
@@ -66,7 +71,7 @@ class AuthViewModel : ViewModel() {
 
         _authState.value = UiState.Loading
 
-        authRepository.createAccount(trimmedEmail, password) { user, errorMessage ->
+        authRepository.createAccount(trimmedEmail, password, trimmedUsername) { user, errorMessage ->
             if (user != null) {
                 bootstrapUser(user)
                 _authState.postValue(UiState.Success(user))
@@ -87,7 +92,7 @@ class AuthViewModel : ViewModel() {
         userRepository.createOrUpdateUser(user)
     }
 
-    private fun validateCredentials(email: String, password: String): String? {
+    private fun validateSignIn(email: String, password: String): String? {
         if (email.isBlank()) {
             return "Email is required."
         }
@@ -97,5 +102,17 @@ class AuthViewModel : ViewModel() {
         }
 
         return null
+    }
+
+    private fun validateCreateAccount(
+        username: String,
+        email: String,
+        password: String
+    ): String? {
+        if (username.isBlank()) {
+            return "Username is required."
+        }
+
+        return validateSignIn(email, password)
     }
 }

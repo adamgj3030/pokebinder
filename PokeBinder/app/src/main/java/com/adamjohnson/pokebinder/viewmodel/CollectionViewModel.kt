@@ -19,8 +19,13 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
         PokemonCardLocalDataSource(application.applicationContext)
     )
 
+    private var allCollectionCards: List<PokemonCard> = emptyList()
+
     private val _collectionState = MutableLiveData<UiState<List<PokemonCard>>>(UiState.Loading)
     val collectionState: LiveData<UiState<List<PokemonCard>>> = _collectionState
+
+    private val _searchQuery = MutableLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
 
     fun loadCollection() {
         val userId = authRepository.getCurrentUserId()
@@ -35,18 +40,28 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
         collectionRepository.getSavedCards(userId) { savedCards, errorMessage ->
             if (savedCards != null) {
                 try {
-                    val cards = savedCards.mapNotNull { savedCard ->
+                    allCollectionCards = savedCards.mapNotNull { savedCard ->
                         cardRepository.getPokemonCard(savedCard.cardId)
                     }
-                    _collectionState.postValue(UiState.Success(cards))
+                    publishFilteredCollection()
                 } catch (exception: Exception) {
+                    allCollectionCards = emptyList()
                     _collectionState.postValue(UiState.Error("Unable to load collection."))
                 }
             } else {
+                allCollectionCards = emptyList()
                 _collectionState.postValue(
                     UiState.Error(errorMessage ?: "Unable to load collection.")
                 )
             }
+        }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+
+        if (_collectionState.value !is UiState.Loading) {
+            publishFilteredCollection()
         }
     }
 
@@ -72,12 +87,43 @@ class CollectionViewModel(application: Application) : AndroidViewModel(applicati
 
         collectionRepository.removeCard(userId, cardId) { errorMessage ->
             if (errorMessage == null) {
-                loadCollection()
+                allCollectionCards = allCollectionCards.filterNot { card ->
+                    card.cardId == cardId
+                }
+                publishFilteredCollection()
             } else {
                 _collectionState.postValue(UiState.Error(errorMessage))
             }
 
             onResult(errorMessage)
+        }
+    }
+
+    private fun publishFilteredCollection() {
+        val filteredCards = filterCollectionCards(
+            cards = allCollectionCards,
+            query = _searchQuery.value.orEmpty()
+        )
+        _collectionState.postValue(UiState.Success(filteredCards))
+    }
+
+    private fun filterCollectionCards(
+        cards: List<PokemonCard>,
+        query: String
+    ): List<PokemonCard> {
+        val trimmedQuery = query.trim()
+
+        if (trimmedQuery.isBlank()) {
+            return cards
+        }
+
+        return cards.filter { card ->
+            card.name.contains(trimmedQuery, ignoreCase = true) ||
+                    card.setName.contains(trimmedQuery, ignoreCase = true) ||
+                    card.cardId.contains(trimmedQuery, ignoreCase = true) ||
+                    card.types.any { type ->
+                        type.contains(trimmedQuery, ignoreCase = true)
+                    }
         }
     }
 }

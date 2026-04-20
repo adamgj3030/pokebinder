@@ -21,6 +21,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val usernameEditText: EditText = view.findViewById(R.id.usernameEditText)
         val emailEditText: EditText = view.findViewById(R.id.emailEditText)
         val passwordEditText: EditText = view.findViewById(R.id.passwordEditText)
         val signInButton: Button = view.findViewById(R.id.signInButton)
@@ -37,7 +38,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         createAccountButton.setOnClickListener {
             authViewModel.createAccount(
                 emailEditText.text.toString(),
-                passwordEditText.text.toString()
+                passwordEditText.text.toString(),
+                usernameEditText.text.toString()
             )
         }
 
@@ -46,6 +48,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 UiState.Loading -> {
                     setLoadingState(
                         isLoading = true,
+                        usernameEditText = usernameEditText,
                         emailEditText = emailEditText,
                         passwordEditText = passwordEditText,
                         signInButton = signInButton,
@@ -58,6 +61,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 is UiState.Error -> {
                     setLoadingState(
                         isLoading = false,
+                        usernameEditText = usernameEditText,
                         emailEditText = emailEditText,
                         passwordEditText = passwordEditText,
                         signInButton = signInButton,
@@ -70,6 +74,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 is UiState.Success -> {
                     setLoadingState(
                         isLoading = false,
+                        usernameEditText = usernameEditText,
                         emailEditText = emailEditText,
                         passwordEditText = passwordEditText,
                         signInButton = signInButton,
@@ -104,11 +109,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun setLoadingState(
         isLoading: Boolean,
+        usernameEditText: EditText,
         emailEditText: EditText,
         passwordEditText: EditText,
         signInButton: Button,
         createAccountButton: Button
     ) {
+        usernameEditText.isEnabled = !isLoading
         emailEditText.isEnabled = !isLoading
         passwordEditText.isEnabled = !isLoading
         signInButton.isEnabled = !isLoading

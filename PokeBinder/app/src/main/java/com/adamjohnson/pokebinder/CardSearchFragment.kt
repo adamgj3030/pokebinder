@@ -2,9 +2,12 @@ package com.adamjohnson.pokebinder.ui.cardsearch
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
+import android.widget.TextView
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -27,7 +30,11 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val searchEditText: EditText = view.findViewById(R.id.searchEditText)
+        val nameSearchEditText: AutoCompleteTextView = view.findViewById(R.id.nameSearchEditText)
+        val setSearchEditText: AutoCompleteTextView = view.findViewById(R.id.setSearchEditText)
+        val typeSearchEditText: AutoCompleteTextView = view.findViewById(R.id.typeSearchEditText)
+        val cardIdSearchEditText: EditText = view.findViewById(R.id.cardIdSearchEditText)
+        val clearFiltersButton: Button = view.findViewById(R.id.clearFiltersButton)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val cardResultsRecyclerView: RecyclerView = view.findViewById(R.id.cardResultsRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
@@ -36,8 +43,8 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         val emptyMessageTextView: TextView = view.findViewById(R.id.emptyMessageTextView)
 
         cardSearchAdapter = CardSearchAdapter(
-            onSaveClick = { card ->
-                cardSearchViewModel.saveCard(card.cardId) { errorMessage ->
+            onSaveToggleClick = { card ->
+                cardSearchViewModel.toggleSavedCard(card.cardId) { errorMessage ->
                     if (errorMessage != null && isAdded) {
                         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                     }
@@ -48,18 +55,64 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         cardResultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         cardResultsRecyclerView.adapter = cardSearchAdapter
 
-        searchEditText.doAfterTextChanged { editable ->
+        nameSearchEditText.doAfterTextChanged { editable ->
             val query = editable?.toString().orEmpty()
-            if (cardSearchViewModel.searchQuery.value != query) {
-                cardSearchViewModel.updateSearchQuery(query)
+            if (cardSearchViewModel.nameQuery.value != query) {
+                cardSearchViewModel.updateNameQuery(query)
             }
         }
 
-        cardSearchViewModel.searchQuery.observe(viewLifecycleOwner) { query ->
-            if (searchEditText.text.toString() != query) {
-                searchEditText.setText(query)
-                searchEditText.setSelection(query.length)
+        setSearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (cardSearchViewModel.setQuery.value != query) {
+                cardSearchViewModel.updateSetQuery(query)
             }
+        }
+
+        typeSearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (cardSearchViewModel.typeQuery.value != query) {
+                cardSearchViewModel.updateTypeQuery(query)
+            }
+        }
+
+        cardIdSearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (cardSearchViewModel.cardIdQuery.value != query) {
+                cardSearchViewModel.updateCardIdQuery(query)
+            }
+        }
+
+        clearFiltersButton.setOnClickListener {
+            cardSearchViewModel.clearFilters()
+        }
+
+        cardSearchViewModel.nameQuery.observe(viewLifecycleOwner) { query ->
+            syncText(nameSearchEditText, query)
+        }
+
+        cardSearchViewModel.setQuery.observe(viewLifecycleOwner) { query ->
+            syncText(setSearchEditText, query)
+        }
+
+        cardSearchViewModel.typeQuery.observe(viewLifecycleOwner) { query ->
+            syncText(typeSearchEditText, query)
+        }
+
+        cardSearchViewModel.cardIdQuery.observe(viewLifecycleOwner) { query ->
+            syncText(cardIdSearchEditText, query)
+        }
+
+        cardSearchViewModel.nameSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(nameSearchEditText, suggestions)
+        }
+
+        cardSearchViewModel.setSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(setSearchEditText, suggestions)
+        }
+
+        cardSearchViewModel.typeSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(typeSearchEditText, suggestions)
         }
 
         cardSearchViewModel.savedCardIds.observe(viewLifecycleOwner) { savedCardIds ->
@@ -108,6 +161,7 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
     override fun onResume() {
         super.onResume()
         cardSearchViewModel.loadSavedCardIds()
+        cardSearchViewModel.loadCards()
     }
 
     private fun renderLoading(
@@ -132,7 +186,7 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         emptyMessageTextView: TextView
     ) {
         currentCards = cards
-        cardSearchAdapter.submitList(cards, currentSavedCardIds)
+        cardSearchAdapter.submitList(currentCards, currentSavedCardIds)
         resultCountTextView.text = getString(R.string.card_search_results_label, cards.size)
         loadingView.visibility = View.GONE
 
@@ -140,7 +194,11 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
             cardResultsRecyclerView.visibility = View.GONE
             emptyStateView.visibility = View.VISIBLE
             emptyTitleTextView.text = getString(R.string.card_search_empty_title)
-            emptyMessageTextView.text = getString(R.string.card_search_empty_message)
+            emptyMessageTextView.text = if (hasActiveFilters()) {
+                "Try changing or clearing one of the filters."
+            } else {
+                getString(R.string.card_search_empty_message)
+            }
         } else {
             cardResultsRecyclerView.visibility = View.VISIBLE
             emptyStateView.visibility = View.GONE
@@ -164,5 +222,40 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         emptyStateView.visibility = View.VISIBLE
         emptyTitleTextView.text = getString(R.string.card_search_error_title)
         emptyMessageTextView.text = message
+    }
+
+    private fun syncText(editText: EditText, value: String) {
+        if (editText.text.toString() != value) {
+            editText.setText(value)
+            editText.setSelection(value.length)
+        }
+    }
+
+    private fun bindSuggestions(
+        autoCompleteTextView: AutoCompleteTextView,
+        suggestions: List<String>
+    ) {
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            suggestions
+        )
+        autoCompleteTextView.setAdapter(adapter)
+
+        if (suggestions.isEmpty()) {
+            autoCompleteTextView.dismissDropDown()
+        } else if (
+            autoCompleteTextView.hasFocus() &&
+            autoCompleteTextView.text.toString().isNotBlank()
+        ) {
+            autoCompleteTextView.showDropDown()
+        }
+    }
+
+    private fun hasActiveFilters(): Boolean {
+        return cardSearchViewModel.nameQuery.value.orEmpty().isNotBlank() ||
+                cardSearchViewModel.setQuery.value.orEmpty().isNotBlank() ||
+                cardSearchViewModel.typeQuery.value.orEmpty().isNotBlank() ||
+                cardSearchViewModel.cardIdQuery.value.orEmpty().isNotBlank()
     }
 }

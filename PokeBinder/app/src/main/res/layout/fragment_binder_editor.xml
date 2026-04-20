@@ -1,378 +1,485 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/binderEditorTitleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/binder_editor_title"
-            android:textAppearance="?attr/textAppearanceHeadlineSmall" />
-
-        <TextView
-            android:id="@+id/binderEditorSubtitleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp"
-            android:text="@string/binder_editor_subtitle"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-        <EditText
-            android:id="@+id/pageTitleEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/binder_editor_page_title_hint"
-            android:imeOptions="actionDone"
-            android:inputType="textCapWords" />
-
-        <TextView
-            android:id="@+id/selectedSlotTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/binder_editor_no_slot_selected"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/editorMessageTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:visibility="gone" />
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/slot1TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 1&#10;Empty" />
-
-                <TextView
-                    android:id="@+id/slot2TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 2&#10;Abra" />
-
-                <TextView
-                    android:id="@+id/slot3TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 3&#10;Empty" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/slot4TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 4&#10;Pikachu" />
-
-                <TextView
-                    android:id="@+id/slot5TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 5&#10;Empty" />
-
-                <TextView
-                    android:id="@+id/slot6TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 6&#10;Bulbasaur" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/slot7TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 7&#10;Charmander" />
-
-                <TextView
-                    android:id="@+id/slot8TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 8&#10;Empty" />
-
-                <TextView
-                    android:id="@+id/slot9TextView"
-                    android:layout_width="0dp"
-                    android:layout_height="96dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/darker_gray"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:maxLines="3"
-                    android:padding="8dp"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    tools:text="Slot 9&#10;Empty" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/clearSelectedSlotButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/binder_editor_clear_selected_slot" />
-
-            <Button
-                android:id="@+id/saveDraftButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="@string/binder_editor_save_draft" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/publishButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/binder_editor_publish" />
-
-        <TextView
-            android:id="@+id/publishStatusTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            tools:text="Fill all 9 slots to publish. Filled: 5/9." />
-
-        <Button
-            android:id="@+id/viewDraftsButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/binder_editor_view_drafts" />
-
-        <TextView
-            android:id="@+id/cardPickerTitleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/binder_editor_picker_title"
-            android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-        <TextView
-            android:id="@+id/cardPickerSubtitleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/binder_editor_picker_subtitle"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/cardPickerRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:listitem="@layout/item_binder_picker_card" />
-
-            <LinearLayout
-                android:id="@+id/cardPickerLoadingView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <ProgressBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <TextView
+                <Button
+                    android:id="@+id/cancelButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/binder_editor_picker_loading"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-            </LinearLayout>
+                    android:text="Cancel" />
 
-            <LinearLayout
-                android:id="@+id/cardPickerEmptyStateView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="24dp"
-                android:visibility="gone">
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
 
-                <TextView
-                    android:id="@+id/cardPickerEmptyTitleTextView"
+                <Button
+                    android:id="@+id/saveButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/binder_editor_picker_empty_title"
-                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+                    android:text="Save" />
 
-                <TextView
-                    android:id="@+id/cardPickerEmptyMessageTextView"
+                <Button
+                    android:id="@+id/publishButton"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Publish" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/pageTitleEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Binder title"
+                android:inputType="textCapSentences"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/editorMessageTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/slot1Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot1ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 1 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot1PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot1RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot2Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot2ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 2 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot2PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot2RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot3Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot3ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 3 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot3PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot3RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="@string/binder_editor_picker_empty_message"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/slot4Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot4ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 4 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot4PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot4RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot5Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot5ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 5 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot5PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot5RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot6Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot6ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 6 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot6PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot6RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/slot7Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot7ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 7 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot7PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot7RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot8Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot8ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 8 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot8PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot8RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/slot9Container"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/darker_gray"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:id="@+id/slot9ImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Slot 9 card"
+                            android:scaleType="fitCenter"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/slot9PlusTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textColor="@android:color/white"
+                            android:textSize="34sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/slot9RemoveTextView"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="6dp"
+                            android:background="#D32F2F"
+                            android:gravity="center"
+                            android:text="-"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </LinearLayout>
             </LinearLayout>
 
-        </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
 
-    </LinearLayout>
-
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/pageLoadingView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#66000000"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:orientation="vertical"
+        android:background="#66FFFFFF"
         android:visibility="gone">
 
         <ProgressBar
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/binder_editor_page_loading"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
+            android:layout_gravity="center" />
+    </FrameLayout>
 
 </FrameLayout>

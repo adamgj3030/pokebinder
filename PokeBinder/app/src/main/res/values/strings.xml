@@ -7,7 +7,7 @@
     <string name="create_account">Create Account</string>
     <string name="auth_loading">Working...</string>
     <string name="profile_title">My Profile</string>
-    <string name="profile_signed_in_message">You are signed in to PokeBinder.</string>
+    <string name="profile_signed_in_message">You are signed into PokeBinder as %1$s.</string>
     <string name="profile_signed_out_message">You must be signed in to view your profile.</string>
     <string name="profile_subtitle">View your signed-in account and your published binder pages.</string>
     <string name="profile_display_name_fallback">PokeBinder User</string>
@@ -18,6 +18,16 @@
     <string name="profile_error_title">Unable to load profile</string>
     <string name="profile_results_default">Your published pages: 0</string>
     <string name="profile_results_label">Your published pages: %1$d</string>
+    <string name="profile_email_value">Email: %1$s</string>
+    <string name="profile_email_placeholder">Email: -</string>
+    <string name="profile_summary_title">Summary</string>
+    <string name="profile_total_published_pages_label">Total published pages</string>
+    <string name="profile_total_likes_received_label">Total likes received</string>
+    <string name="profile_total_comments_received_label">Total comments received</string>
+    <string name="profile_metric_zero">0</string>
+    <string name="profile_social_entry_title">Community activity</string>
+    <string name="profile_your_likes">Your Likes</string>
+    <string name="profile_your_comments">Your Comments</string>
     <string name="sign_out">Sign Out</string>
 
     <string name="card_search_title">Card Catalog</string>
@@ -52,8 +62,10 @@
     <string name="feed_results_label">Published pages: %1$d</string>
     <string name="feed_item_untitled">Untitled page</string>
     <string name="feed_item_filled_slots">Filled slots: %1$d/9</string>
-    <string name="feed_item_social_summary">Likes: %1$d • Comments: %2$d</string>
+    <string name="feed_item_social_summary">%1$d likes • %2$d comments</string>
     <string name="feed_item_published_at">Published: %1$s</string>
+    <string name="feed_item_by_username">By %1$s</string>
+    <string name="feed_item_unknown_user">Unknown user</string>
 
     <string name="binder_editor_title">Binder Editor</string>
     <string name="binder_editor_subtitle">Tap a slot, then tap a saved collection card to place it on the page.</string>
@@ -67,7 +79,7 @@
     <string name="binder_editor_clear_selected_slot">Clear Selected Slot</string>
     <string name="binder_editor_save_draft">Save Draft</string>
     <string name="binder_editor_publish">Publish</string>
-    <string name="binder_editor_view_drafts">View Drafts</string>
+    <string name="binder_editor_view_drafts">View Binders</string>
     <string name="binder_editor_picker_title">Saved Collection Cards</string>
     <string name="binder_editor_picker_subtitle">These cards come from your saved collection for this phase.</string>
     <string name="binder_editor_picker_loading">Loading saved cards...</string>
@@ -84,17 +96,43 @@
     <string name="binder_editor_publish_not_ready_message">Fill all 9 slots to publish. Filled: %1$d/9.</string>
     <string name="binder_editor_publish_read_only_message">This page has been published and is now read-only.</string>
 
-    <string name="drafts_title">My Drafts</string>
-    <string name="drafts_subtitle">Open a saved binder draft and keep editing it.</string>
-    <string name="drafts_loading">Loading drafts...</string>
-    <string name="drafts_empty_title">No drafts yet</string>
-    <string name="drafts_empty_message">Create and save a binder page in the editor to see it here.</string>
-    <string name="drafts_error_title">Unable to load drafts</string>
-    <string name="drafts_results_default">Drafts: 0</string>
-    <string name="drafts_results_label">Drafts: %1$d</string>
-    <string name="drafts_item_untitled">Untitled draft</string>
+    <string name="drafts_title">Binders</string>
+    <string name="drafts_subtitle">Browse your drafts and published binders in one place.</string>
+    <string name="drafts_loading">Loading binders...</string>
+    <string name="drafts_empty_title">Unable to load binders</string>
+    <string name="drafts_empty_message">Please try again.</string>
+    <string name="drafts_error_title">Unable to load binders</string>
+    <string name="drafts_results_default">Binders shown: 0</string>
+    <string name="drafts_results_label">Binders shown: %1$d</string>
+    <string name="drafts_item_untitled">Untitled binder</string>
     <string name="drafts_item_filled_slots">Filled slots: %1$d/9</string>
     <string name="drafts_item_updated_at">Last updated: %1$s</string>
+
+    <string name="binders_title">Binders</string>
+    <string name="binders_loading">Loading binders...</string>
+    <string name="binders_results_default">Binders shown: 0</string>
+    <string name="binders_results_label">Binders shown: %1$d</string>
+    <string name="binders_total_label">Total binders</string>
+    <string name="binders_total_likes_label">Total likes</string>
+    <string name="binders_metric_zero">0</string>
+    <string name="binders_search_hint">Search binders by title</string>
+    <string name="binders_filter_all">All</string>
+    <string name="binders_filter_drafts">Drafts</string>
+    <string name="binders_filter_published">Published</string>
+    <string name="binders_error_title">Unable to load binders</string>
+    <string name="binders_create_new_title">Create New</string>
+    <string name="binders_create_new_message">Start a fresh binder draft.</string>
+    <string name="binders_item_untitled">Untitled binder</string>
+    <string name="binders_item_status_draft">Draft</string>
+    <string name="binders_item_status_published">Published</string>
+    <string name="binders_item_updated_at">Last updated: %1$s</string>
+    <string name="binders_item_social_summary">%1$d likes • %2$d comments</string>
+    <string name="binders_delete_button">Delete</string>
+    <string name="binders_delete_title">Delete binder?</string>
+    <string name="binders_delete_message">This will permanently delete "%1$s".</string>
+    <string name="binders_delete_confirm">Delete</string>
+    <string name="binders_delete_cancel">Cancel</string>
+    <string name="binders_delete_success">Binder deleted.</string>
 
     <string name="page_detail_title">Published Page</string>
     <string name="page_detail_untitled">Untitled page</string>
@@ -131,6 +169,18 @@
     <string name="page_detail_comments_loading">Loading comments...</string>
     <string name="page_detail_comments_empty_message">No comments yet. Be the first to comment.</string>
     <string name="page_detail_comment_user_fallback">User</string>
+    <string name="page_detail_by_username">By %1$s</string>
+    <string name="page_detail_unknown_user">Unknown user</string>
+
+    <string name="social_pages_likes_title">Your Likes</string>
+    <string name="social_pages_comments_title">Your Comments</string>
+    <string name="social_pages_likes_loading">Loading liked pages...</string>
+    <string name="social_pages_comments_loading">Loading commented pages...</string>
+    <string name="social_pages_likes_empty_title">No liked pages yet</string>
+    <string name="social_pages_likes_empty_message">Pages you like will appear here.</string>
+    <string name="social_pages_comments_empty_title">No commented pages yet</string>
+    <string name="social_pages_comments_empty_message">Pages you comment on will appear here.</string>
+    <string name="social_pages_error_title">Unable to load pages</string>
 
     <string name="card_types_label">Types: %1$s</string>
     <string name="card_types_placeholder">Types: -</string>

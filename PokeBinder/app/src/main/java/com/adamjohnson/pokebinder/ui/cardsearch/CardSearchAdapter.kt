@@ -12,12 +12,12 @@ import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.bumptech.glide.Glide
 
 class CardSearchAdapter(
-    private val onSaveClick: (PokemonCard) -> Unit,
+    private val onSaveToggleClick: (PokemonCard) -> Unit,
     private val onCardClick: ((PokemonCard) -> Unit)? = null
-) : RecyclerView.Adapter<CardSearchAdapter.CardViewHolder>() {
+) : RecyclerView.Adapter<CardSearchAdapter.CardSearchViewHolder>() {
 
     private val cards = mutableListOf<PokemonCard>()
-    private var savedCardIds = emptySet<String>()
+    private var savedCardIds: Set<String> = emptySet()
 
     fun submitList(
         newCards: List<PokemonCard>,
@@ -29,23 +29,23 @@ class CardSearchAdapter(
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardSearchViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_card_search_result, parent, false)
-        return CardViewHolder(view)
+        return CardSearchViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: CardSearchViewHolder, position: Int) {
         val card = cards[position]
         val isSaved = savedCardIds.contains(card.cardId)
-        holder.bind(card, isSaved, onSaveClick, onCardClick)
+        holder.bind(card, isSaved, onSaveToggleClick, onCardClick)
     }
 
     override fun getItemCount(): Int {
         return cards.size
     }
 
-    class CardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class CardSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
         private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
@@ -56,7 +56,7 @@ class CardSearchAdapter(
         fun bind(
             card: PokemonCard,
             isSaved: Boolean,
-            onSaveClick: (PokemonCard) -> Unit,
+            onSaveToggleClick: (PokemonCard) -> Unit,
             onCardClick: ((PokemonCard) -> Unit)?
         ) {
             cardNameTextView.text = card.name
@@ -85,26 +85,16 @@ class CardSearchAdapter(
                 itemView.context.getString(R.string.save_to_collection)
             }
 
-            saveButton.isEnabled = !isSaved
-
-            if (isSaved) {
-                saveButton.setOnClickListener(null)
-            } else {
-                saveButton.setOnClickListener {
-                    onSaveClick(card)
-                }
+            saveButton.setOnClickListener {
+                onSaveToggleClick(card)
             }
 
             if (onCardClick != null) {
                 itemView.setOnClickListener {
                     onCardClick(card)
                 }
-                itemView.isClickable = true
-                itemView.isFocusable = true
             } else {
                 itemView.setOnClickListener(null)
-                itemView.isClickable = false
-                itemView.isFocusable = false
             }
         }
     }

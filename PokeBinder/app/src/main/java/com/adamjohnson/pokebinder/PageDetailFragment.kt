@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
@@ -18,6 +19,7 @@ import com.adamjohnson.pokebinder.data.model.Comment
 import com.adamjohnson.pokebinder.data.repository.CardRepository
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.PageDetailViewModel
+import com.bumptech.glide.Glide
 import java.text.DateFormat
 import java.util.Date
 
@@ -29,13 +31,12 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         CardRepository(PokemonCardLocalDataSource(requireContext().applicationContext))
     }
 
-    private lateinit var slotViews: List<TextView>
+    private lateinit var slotImageViews: List<ImageView>
     private lateinit var commentsAdapter: CommentsAdapter
 
     private lateinit var contentScrollView: View
     private lateinit var pageTitleTextView: TextView
-    private lateinit var pageStatusTextView: TextView
-    private lateinit var filledSlotsTextView: TextView
+    private lateinit var creatorUsernameTextView: TextView
     private lateinit var publishedAtTextView: TextView
     private lateinit var likeCountTextView: TextView
     private lateinit var commentCountTextView: TextView
@@ -57,8 +58,7 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
 
         contentScrollView = view.findViewById(R.id.contentScrollView)
         pageTitleTextView = view.findViewById(R.id.pageTitleTextView)
-        pageStatusTextView = view.findViewById(R.id.pageStatusTextView)
-        filledSlotsTextView = view.findViewById(R.id.filledSlotsTextView)
+        creatorUsernameTextView = view.findViewById(R.id.creatorUsernameTextView)
         publishedAtTextView = view.findViewById(R.id.publishedAtTextView)
         likeCountTextView = view.findViewById(R.id.likeCountTextView)
         commentCountTextView = view.findViewById(R.id.commentCountTextView)
@@ -73,16 +73,16 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         pageMessageTextView = view.findViewById(R.id.pageMessageTextView)
         loadingView = view.findViewById(R.id.loadingView)
 
-        slotViews = listOf(
-            view.findViewById(R.id.slot1TextView),
-            view.findViewById(R.id.slot2TextView),
-            view.findViewById(R.id.slot3TextView),
-            view.findViewById(R.id.slot4TextView),
-            view.findViewById(R.id.slot5TextView),
-            view.findViewById(R.id.slot6TextView),
-            view.findViewById(R.id.slot7TextView),
-            view.findViewById(R.id.slot8TextView),
-            view.findViewById(R.id.slot9TextView)
+        slotImageViews = listOf(
+            view.findViewById(R.id.slot1ImageView),
+            view.findViewById(R.id.slot2ImageView),
+            view.findViewById(R.id.slot3ImageView),
+            view.findViewById(R.id.slot4ImageView),
+            view.findViewById(R.id.slot5ImageView),
+            view.findViewById(R.id.slot6ImageView),
+            view.findViewById(R.id.slot7ImageView),
+            view.findViewById(R.id.slot8ImageView),
+            view.findViewById(R.id.slot9ImageView)
         )
 
         commentsAdapter = CommentsAdapter()
@@ -200,10 +200,11 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             getString(R.string.page_detail_untitled)
         }
 
-        pageStatusTextView.text = getString(R.string.page_detail_status_published)
-        filledSlotsTextView.text = getString(
-            R.string.page_detail_filled_slots,
-            getFilledSlotCount(binderPage)
+        creatorUsernameTextView.text = getString(
+            R.string.page_detail_by_username,
+            binderPage.creatorUsername.trim().ifBlank {
+                getString(R.string.page_detail_unknown_user)
+            }
         )
 
         likeCountTextView.text = getString(
@@ -232,7 +233,7 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             publishedAtTextView.visibility = View.GONE
         }
 
-        renderSlotViews(binderPage)
+        renderSlotImages(binderPage)
         renderInteractionControls()
     }
 
@@ -241,7 +242,7 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         contentScrollView.visibility = View.GONE
         pageMessageTextView.text = message
         pageMessageTextView.visibility = View.VISIBLE
-        renderSlotViews(null)
+        renderSlotImages(null)
         renderInteractionControls()
     }
 
@@ -365,36 +366,31 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         suppressCommentTextWatcher = false
     }
 
-    private fun renderSlotViews(binderPage: BinderPage?) {
-        slotViews.forEachIndexed { index, slotView ->
+    private fun renderSlotImages(binderPage: BinderPage?) {
+        slotImageViews.forEachIndexed { index, imageView ->
             val cardId = binderPage?.slots?.getOrNull(index)?.cardId
-            val cardText = getSlotCardDisplayText(cardId)
-
-            slotView.text = getString(R.string.page_detail_slot_label, index + 1, cardText)
-            slotView.setBackgroundResource(android.R.color.darker_gray)
+            bindSlotImage(imageView, cardId)
         }
     }
 
-    private fun getSlotCardDisplayText(cardId: String?): String {
-        if (cardId.isNullOrBlank()) {
-            return getString(R.string.page_detail_slot_empty)
-        }
-
-        val pokemonCard = cardRepository.getPokemonCard(cardId)
-        return if (pokemonCard != null) {
-            getString(
-                R.string.page_detail_slot_card_info,
-                pokemonCard.name,
-                pokemonCard.setName
-            )
+    private fun bindSlotImage(imageView: ImageView, cardId: String?) {
+        val pokemonCard = if (cardId.isNullOrBlank()) {
+            null
         } else {
-            cardId
+            cardRepository.getPokemonCard(cardId)
         }
-    }
 
-    private fun getFilledSlotCount(binderPage: BinderPage): Int {
-        return binderPage.slots.count { slot ->
-            !slot.cardId.isNullOrBlank()
+        if (pokemonCard == null) {
+            Glide.with(this).clear(imageView)
+            imageView.setImageResource(android.R.drawable.ic_menu_report_image)
+            imageView.alpha = 0.35f
+        } else {
+            imageView.alpha = 1f
+            Glide.with(this)
+                .load(pokemonCard.imageUrl)
+                .placeholder(android.R.drawable.ic_menu_report_image)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(imageView)
         }
     }
 

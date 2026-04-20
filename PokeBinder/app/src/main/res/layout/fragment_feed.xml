@@ -15,18 +15,10 @@
         android:textAppearance="?attr/textAppearanceHeadlineSmall" />
 
     <TextView
-        android:id="@+id/feedSubtitleTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/feed_subtitle"
-        android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-    <TextView
         android:id="@+id/resultCountTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:text="@string/feed_results_default"
         android:textAppearance="?attr/textAppearanceBodyMedium" />
