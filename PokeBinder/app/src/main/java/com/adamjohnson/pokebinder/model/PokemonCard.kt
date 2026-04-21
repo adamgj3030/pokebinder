@@ -5,5 +5,7 @@ data class PokemonCard(
     val name: String = "",
     val imageUrl: String = "",
     val setName: String = "",
-    val types: List<String> = emptyList()
+    val types: List<String> = emptyList(),
+    val subtypes: List<String> = emptyList(),
+    val rarity: String = ""
 )

@@ -185,4 +185,17 @@
     <string name="card_types_label">Types: %1$s</string>
     <string name="card_types_placeholder">Types: -</string>
     <string name="pokemon_card_image">Pokémon card image</string>
+
+    <string name="card_preview_title_fallback">Card Preview</string>
+    <string name="card_preview_unknown_card">Unable to load this card preview.</string>
+    <string name="card_preview_set_and_id">%1$s • %2$s</string>
+    <string name="card_preview_details">Details</string>
+    <string name="card_preview_close">Close</string>
+    <string name="card_preview_details_title">Card Details</string>
+    <string name="card_preview_details_message">Name: %1$s
+Set: %2$s
+Types: %3$s
+Card ID: %4$s</string>
+    <string name="card_preview_unknown_value">-</string>
+    <string name="card_preview_card_content_description">%1$s card</string>
 </resources>

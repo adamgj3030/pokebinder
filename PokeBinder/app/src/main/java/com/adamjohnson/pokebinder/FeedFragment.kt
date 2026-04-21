@@ -85,9 +85,14 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        feedViewModel.loadFeedPages()
+    override fun onStart() {
+        super.onStart()
+        feedViewModel.startListening()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        feedViewModel.stopListening()
     }
 
     private fun openPublishedPageDetail(binderPage: BinderPage) {

@@ -3,7 +3,6 @@ package com.adamjohnson.pokebinder.ui.collection
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -12,14 +11,20 @@ import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.bumptech.glide.Glide
 
 class CollectionAdapter(
-    private val onRemoveClick: (PokemonCard) -> Unit
+    private val onCardClick: (PokemonCard) -> Unit,
+    private val onDeleteClick: (PokemonCard) -> Unit
 ) : RecyclerView.Adapter<CollectionAdapter.CollectionViewHolder>() {
 
     private val cards = mutableListOf<PokemonCard>()
+    private var deleteModeEnabled = false
 
-    fun submitList(newCards: List<PokemonCard>) {
+    fun submitData(
+        newCards: List<PokemonCard>,
+        deleteModeEnabled: Boolean
+    ) {
         cards.clear()
         cards.addAll(newCards)
+        this.deleteModeEnabled = deleteModeEnabled
         notifyDataSetChanged()
     }
 
@@ -30,7 +35,7 @@ class CollectionAdapter(
     }
 
     override fun onBindViewHolder(holder: CollectionViewHolder, position: Int) {
-        holder.bind(cards[position], onRemoveClick)
+        holder.bind(cards[position], deleteModeEnabled, onCardClick, onDeleteClick)
     }
 
     override fun getItemCount(): Int {
@@ -41,24 +46,15 @@ class CollectionAdapter(
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
         private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
-        private val setNameTextView: TextView = itemView.findViewById(R.id.setNameTextView)
-        private val typesTextView: TextView = itemView.findViewById(R.id.typesTextView)
-        private val removeButton: Button = itemView.findViewById(R.id.removeButton)
+        private val deleteBadgeTextView: TextView = itemView.findViewById(R.id.deleteBadgeTextView)
 
-        fun bind(card: PokemonCard, onRemoveClick: (PokemonCard) -> Unit) {
-            cardNameTextView.text = card.name
-            setNameTextView.text = card.setName
-
-            val typesText = if (card.types.isEmpty()) {
-                itemView.context.getString(R.string.card_types_placeholder)
-            } else {
-                itemView.context.getString(
-                    R.string.card_types_label,
-                    card.types.joinToString(", ")
-                )
-            }
-
-            typesTextView.text = typesText
+        fun bind(
+            card: PokemonCard,
+            deleteModeEnabled: Boolean,
+            onCardClick: (PokemonCard) -> Unit,
+            onDeleteClick: (PokemonCard) -> Unit
+        ) {
+            cardNameTextView.text = card.name.ifBlank { card.cardId }
 
             Glide.with(itemView)
                 .load(card.imageUrl)
@@ -66,8 +62,14 @@ class CollectionAdapter(
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(cardImageView)
 
-            removeButton.setOnClickListener {
-                onRemoveClick(card)
+            deleteBadgeTextView.visibility = if (deleteModeEnabled) View.VISIBLE else View.GONE
+
+            itemView.setOnClickListener {
+                onCardClick(card)
+            }
+
+            deleteBadgeTextView.setOnClickListener {
+                onDeleteClick(card)
             }
         }
     }

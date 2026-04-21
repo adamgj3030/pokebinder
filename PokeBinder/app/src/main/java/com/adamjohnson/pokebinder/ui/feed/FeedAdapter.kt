@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.BinderPage
 import com.adamjohnson.pokebinder.data.repository.CardRepository
-import com.bumptech.glide.Glide
+import com.adamjohnson.pokebinder.ui.cardpreview.PokemonCardImageBinder
 
 class FeedAdapter(
     private val cardRepository: CardRepository,
@@ -99,28 +99,13 @@ class FeedAdapter(
         private fun renderPreviewImages(binderPage: BinderPage) {
             slotImageViews.forEachIndexed { index, imageView ->
                 val cardId = binderPage.slots.getOrNull(index)?.cardId
-                bindCardImage(imageView, cardId)
-            }
-        }
+                val pokemonCard = if (cardId.isNullOrBlank()) {
+                    null
+                } else {
+                    cardRepository.getPokemonCard(cardId)
+                }
 
-        private fun bindCardImage(imageView: ImageView, cardId: String?) {
-            val pokemonCard = if (cardId.isNullOrBlank()) {
-                null
-            } else {
-                cardRepository.getPokemonCard(cardId)
-            }
-
-            if (pokemonCard == null) {
-                Glide.with(itemView).clear(imageView)
-                imageView.setImageResource(android.R.drawable.ic_menu_report_image)
-                imageView.alpha = 0.35f
-            } else {
-                imageView.alpha = 1f
-                Glide.with(itemView)
-                    .load(pokemonCard.imageUrl)
-                    .placeholder(android.R.drawable.ic_menu_report_image)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .into(imageView)
+                PokemonCardImageBinder.bind(imageView, pokemonCard)
             }
         }
     }

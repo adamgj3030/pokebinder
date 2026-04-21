@@ -6,6 +6,7 @@ import com.adamjohnson.pokebinder.data.model.BinderSlot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 
 class BinderPageRepository(
@@ -227,6 +228,34 @@ class BinderPageRepository(
             }
     }
 
+    fun listenToPublishedPage(
+        pageId: String,
+        onResult: (BinderPage?, String?) -> Unit
+    ): ListenerRegistration? {
+        if (pageId.isBlank()) {
+            onResult(null, "Invalid page.")
+            return null
+        }
+
+        return publishedPagesCollection()
+            .document(pageId)
+            .addSnapshotListener { document, exception ->
+                if (exception != null) {
+                    onResult(
+                        null,
+                        exception.localizedMessage ?: "Unable to load published page."
+                    )
+                    return@addSnapshotListener
+                }
+
+                if (document != null && document.exists()) {
+                    onResult(documentToPublishedPage(document), null)
+                } else {
+                    onResult(null, "Published page not found.")
+                }
+            }
+    }
+
     fun getPublishedPages(
         onResult: (List<BinderPage>?, String?) -> Unit
     ) {
@@ -246,6 +275,29 @@ class BinderPageRepository(
                     null,
                     exception.localizedMessage ?: "Unable to load published pages."
                 )
+            }
+    }
+
+    fun listenToPublishedPages(
+        onResult: (List<BinderPage>?, String?) -> Unit
+    ): ListenerRegistration {
+        return publishedPagesCollection()
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    onResult(
+                        null,
+                        exception.localizedMessage ?: "Unable to load published pages."
+                    )
+                    return@addSnapshotListener
+                }
+
+                val publishedPages = sortPublishedPages(
+                    snapshot?.documents.orEmpty().map { document ->
+                        documentToPublishedPage(document)
+                    }
+                )
+
+                onResult(publishedPages, null)
             }
     }
 

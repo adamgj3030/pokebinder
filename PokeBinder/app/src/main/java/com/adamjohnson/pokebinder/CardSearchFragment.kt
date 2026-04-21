@@ -5,16 +5,19 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.Toast
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.PokemonCard
+import com.adamjohnson.pokebinder.ui.cardpreview.PokemonCardPreviewDialogFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.CardSearchViewModel
 
@@ -26,15 +29,29 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
 
     private var currentCards: List<PokemonCard> = emptyList()
     private var currentSavedCardIds: Set<String> = emptySet()
+    private var isFilterPanelVisible = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        isFilterPanelVisible =
+            savedInstanceState?.getBoolean(STATE_FILTER_PANEL_VISIBLE) ?: false
+
+        val searchToggleButton: ImageButton = view.findViewById(R.id.searchToggleButton)
+        val searchFiltersContainer: View = view.findViewById(R.id.searchFiltersContainer)
+        val applySearchButton: Button = view.findViewById(R.id.applySearchButton)
 
         val nameSearchEditText: AutoCompleteTextView = view.findViewById(R.id.nameSearchEditText)
         val setSearchEditText: AutoCompleteTextView = view.findViewById(R.id.setSearchEditText)
         val typeSearchEditText: AutoCompleteTextView = view.findViewById(R.id.typeSearchEditText)
         val cardIdSearchEditText: EditText = view.findViewById(R.id.cardIdSearchEditText)
+        val subtypeSearchEditText: AutoCompleteTextView =
+            view.findViewById(R.id.subtypeSearchEditText)
+        val raritySearchEditText: AutoCompleteTextView =
+            view.findViewById(R.id.raritySearchEditText)
+        val fullArtOnlyCheckBox: CheckBox = view.findViewById(R.id.fullArtOnlyCheckBox)
         val clearFiltersButton: Button = view.findViewById(R.id.clearFiltersButton)
+
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
         val cardResultsRecyclerView: RecyclerView = view.findViewById(R.id.cardResultsRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
@@ -49,11 +66,22 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
                         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 }
+            },
+            onCardClick = { card ->
+                showCardPreview(card)
             }
         )
 
-        cardResultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        cardResultsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
         cardResultsRecyclerView.adapter = cardSearchAdapter
+
+        searchToggleButton.setOnClickListener {
+            setFilterPanelVisible(searchFiltersContainer, !isFilterPanelVisible)
+        }
+
+        applySearchButton.setOnClickListener {
+            setFilterPanelVisible(searchFiltersContainer, false)
+        }
 
         nameSearchEditText.doAfterTextChanged { editable ->
             val query = editable?.toString().orEmpty()
@@ -83,6 +111,26 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
             }
         }
 
+        subtypeSearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (cardSearchViewModel.subtypeQuery.value != query) {
+                cardSearchViewModel.updateSubtypeQuery(query)
+            }
+        }
+
+        raritySearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (cardSearchViewModel.rarityQuery.value != query) {
+                cardSearchViewModel.updateRarityQuery(query)
+            }
+        }
+
+        fullArtOnlyCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (cardSearchViewModel.fullArtOnly.value != isChecked) {
+                cardSearchViewModel.updateFullArtOnly(isChecked)
+            }
+        }
+
         clearFiltersButton.setOnClickListener {
             cardSearchViewModel.clearFilters()
         }
@@ -103,6 +151,20 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
             syncText(cardIdSearchEditText, query)
         }
 
+        cardSearchViewModel.subtypeQuery.observe(viewLifecycleOwner) { query ->
+            syncText(subtypeSearchEditText, query)
+        }
+
+        cardSearchViewModel.rarityQuery.observe(viewLifecycleOwner) { query ->
+            syncText(raritySearchEditText, query)
+        }
+
+        cardSearchViewModel.fullArtOnly.observe(viewLifecycleOwner) { enabled ->
+            if (fullArtOnlyCheckBox.isChecked != enabled) {
+                fullArtOnlyCheckBox.isChecked = enabled
+            }
+        }
+
         cardSearchViewModel.nameSuggestions.observe(viewLifecycleOwner) { suggestions ->
             bindSuggestions(nameSearchEditText, suggestions)
         }
@@ -113,6 +175,14 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
 
         cardSearchViewModel.typeSuggestions.observe(viewLifecycleOwner) { suggestions ->
             bindSuggestions(typeSearchEditText, suggestions)
+        }
+
+        cardSearchViewModel.subtypeSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(subtypeSearchEditText, suggestions)
+        }
+
+        cardSearchViewModel.raritySuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(raritySearchEditText, suggestions)
         }
 
         cardSearchViewModel.savedCardIds.observe(viewLifecycleOwner) { savedCardIds ->
@@ -156,12 +226,40 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
                 }
             }
         }
+
+        setFilterPanelVisible(searchFiltersContainer, isFilterPanelVisible)
     }
 
     override fun onResume() {
         super.onResume()
         cardSearchViewModel.loadSavedCardIds()
         cardSearchViewModel.loadCards()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_FILTER_PANEL_VISIBLE, isFilterPanelVisible)
+    }
+
+    private fun showCardPreview(card: PokemonCard) {
+        if (!isAdded) {
+            return
+        }
+
+        if (childFragmentManager.findFragmentByTag(PokemonCardPreviewDialogFragment.TAG) != null) {
+            return
+        }
+
+        PokemonCardPreviewDialogFragment.newInstance(card.cardId)
+            .show(childFragmentManager, PokemonCardPreviewDialogFragment.TAG)
+    }
+
+    private fun setFilterPanelVisible(
+        searchFiltersContainer: View,
+        visible: Boolean
+    ) {
+        isFilterPanelVisible = visible
+        searchFiltersContainer.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private fun renderLoading(
@@ -256,6 +354,13 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
         return cardSearchViewModel.nameQuery.value.orEmpty().isNotBlank() ||
                 cardSearchViewModel.setQuery.value.orEmpty().isNotBlank() ||
                 cardSearchViewModel.typeQuery.value.orEmpty().isNotBlank() ||
-                cardSearchViewModel.cardIdQuery.value.orEmpty().isNotBlank()
+                cardSearchViewModel.cardIdQuery.value.orEmpty().isNotBlank() ||
+                cardSearchViewModel.subtypeQuery.value.orEmpty().isNotBlank() ||
+                cardSearchViewModel.rarityQuery.value.orEmpty().isNotBlank() ||
+                (cardSearchViewModel.fullArtOnly.value ?: false)
+    }
+
+    companion object {
+        private const val STATE_FILTER_PANEL_VISIBLE = "stateFilterPanelVisible"
     }
 }

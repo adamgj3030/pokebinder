@@ -2,307 +2,404 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_screen">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:visibility="gone">
+        android:fillViewport="true">
 
         <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/pageTitleTextView"
+            <LinearLayout
+                android:id="@+id/publishedInfoContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                android:textStyle="bold"
-                tools:text="Grass Favorites" />
+                android:background="@drawable/bg_section_surface"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/creatorUsernameTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                tools:text="By AdamJohnson" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/publishedAtTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                tools:text="Published Apr 19, 2026, 2:15 PM" />
+                    <TextView
+                        android:id="@+id/titleTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@string/page_detail_title"
+                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                        android:textColor="@color/poke_text"
+                        android:textStyle="bold"
+                        tools:text="Water Favorites" />
+
+                    <TextView
+                        android:id="@+id/creatorUsernameTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:ellipsize="end"
+                        android:gravity="end"
+                        android:maxLines="1"
+                        android:maxWidth="140dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/poke_text_secondary"
+                        tools:text="by AdamJohnson" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/readOnlyMessageTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/pageGridContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical">
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_section_surface"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/pageGridTitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/pageGridSubtitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:background="@drawable/bg_binder_board"
+                    android:orientation="vertical"
+                    android:padding="8dp">
 
-                    <ImageView
-                        android:id="@+id/slot1ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/slot2ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                        <ImageView
+                            android:id="@+id/slot1ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
 
-                    <ImageView
-                        android:id="@+id/slot3ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
-                </LinearLayout>
+                        <ImageView
+                            android:id="@+id/slot2ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
+                        <ImageView
+                            android:id="@+id/slot3ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
+                    </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/slot4ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/slot5ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                        <ImageView
+                            android:id="@+id/slot4ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
 
-                    <ImageView
-                        android:id="@+id/slot6ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
-                </LinearLayout>
+                        <ImageView
+                            android:id="@+id/slot5ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
+                        <ImageView
+                            android:id="@+id/slot6ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
+                    </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/slot7ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/slot8ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                        <ImageView
+                            android:id="@+id/slot7ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
 
-                    <ImageView
-                        android:id="@+id/slot9ImageView"
-                        android:layout_width="0dp"
-                        android:layout_height="168dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/darker_gray"
-                        android:contentDescription="@string/pokemon_card_image"
-                        android:scaleType="fitCenter"
-                        android:src="@android:drawable/ic_menu_report_image" />
+                        <ImageView
+                            android:id="@+id/slot8ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
+
+                        <ImageView
+                            android:id="@+id/slot9ImageView"
+                            android:layout_width="0dp"
+                            android:layout_height="156dp"
+                            android:layout_marginStart="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_binder_slot"
+                            android:contentDescription="@string/pokemon_card_image"
+                            android:padding="3dp"
+                            android:scaleType="fitCenter" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/socialSectionTitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/page_detail_social_title"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_section_surface"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/socialSectionTitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/page_detail_social_title"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="@color/poke_text"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/likeButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_cta_primary"
+                        android:backgroundTint="@null"
+                        android:enabled="false"
+                        android:minHeight="44dp"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/page_detail_like"
+                        android:textAllCaps="false"
+                        android:textColor="@color/poke_text_on_red" />
+
+                    <TextView
+                        android:id="@+id/likeCountTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_counter_chip"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="6dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/poke_text_secondary"
+                        tools:text="Likes: 3" />
+
+                    <TextView
+                        android:id="@+id/commentCountTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_counter_chip"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="6dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/poke_text_secondary"
+                        tools:text="Comments: 2" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/addCommentTitleTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/page_detail_add_comment_title"
+                    android:textAppearance="?attr/textAppearanceTitleSmall"
+                    android:textColor="@color/poke_text"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/commentEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_binder_slot"
+                    android:enabled="false"
+                    android:gravity="top|start"
+                    android:hint="@string/page_detail_comment_hint"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:minLines="3"
+                    android:padding="12dp"
+                    android:textColor="@color/poke_text"
+                    android:textColorHint="@color/poke_text_secondary"
+                    tools:text="Love the grass theme on this page." />
 
                 <Button
-                    android:id="@+id/likeButton"
+                    android:id="@+id/submitCommentButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_cta_secondary"
+                    android:backgroundTint="@null"
                     android:enabled="false"
-                    android:text="@string/page_detail_like" />
+                    android:minHeight="44dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="@string/page_detail_submit_comment"
+                    android:textAllCaps="false"
+                    android:textColor="@color/poke_text" />
 
                 <TextView
-                    android:id="@+id/likeCountTextView"
+                    android:id="@+id/commentSubmissionMessageTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_counter_chip"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    tools:text="Likes: 3" />
+                    android:textColor="@color/poke_text_secondary"
+                    android:visibility="gone"
+                    tools:text="Comment added."
+                    tools:visibility="visible" />
 
                 <TextView
-                    android:id="@+id/commentCountTextView"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/commentsSectionTitleTextView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/page_detail_comments_title"
+                    android:textAppearance="?attr/textAppearanceTitleSmall"
+                    android:textColor="@color/poke_text"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/commentsLoadingView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_counter_chip"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/page_detail_comments_loading"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/poke_text_secondary" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/commentsMessageTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_counter_chip"
+                    android:padding="12dp"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    tools:text="Comments: 2" />
-            </LinearLayout>
+                    android:textColor="@color/poke_text_secondary"
+                    android:visibility="gone"
+                    tools:text="No comments yet. Be the first to comment."
+                    tools:visibility="visible" />
 
-            <TextView
-                android:id="@+id/addCommentTitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/page_detail_add_comment_title"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <EditText
-                android:id="@+id/commentEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:enabled="false"
-                android:gravity="top|start"
-                android:hint="@string/page_detail_comment_hint"
-                android:inputType="textCapSentences|textMultiLine"
-                android:minLines="3"
-                android:padding="12dp"
-                tools:text="Love the grass theme on this page." />
-
-            <Button
-                android:id="@+id/submitCommentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:enabled="false"
-                android:text="@string/page_detail_submit_comment" />
-
-            <TextView
-                android:id="@+id/commentSubmissionMessageTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:visibility="gone"
-                tools:text="Comment added."
-                tools:visibility="visible" />
-
-            <TextView
-                android:id="@+id/commentsSectionTitleTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/page_detail_comments_title"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <LinearLayout
-                android:id="@+id/commentsLoadingView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <ProgressBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/commentsRecyclerView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/page_detail_comments_loading"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_comment" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/commentsMessageTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:visibility="gone"
-                tools:text="No comments yet. Be the first to comment."
-                tools:visibility="visible" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/commentsRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:nestedScrollingEnabled="false"
-                android:visibility="gone"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_comment" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <TextView
         android:id="@+id/pageMessageTextView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:background="@drawable/bg_section_surface"
         android:gravity="center"
         android:padding="24dp"
         android:text="@string/page_detail_empty_message"
         android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="@color/poke_text"
         android:visibility="gone"
         tools:text="Published page not found."
         tools:visibility="visible" />
@@ -318,17 +415,26 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/page_detail_loading"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="@android:color/white" />
+            android:background="@drawable/bg_section_surface"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/page_detail_loading"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/poke_text" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

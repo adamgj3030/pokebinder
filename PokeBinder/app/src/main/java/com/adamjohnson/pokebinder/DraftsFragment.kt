@@ -6,7 +6,6 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -23,6 +22,7 @@ import com.adamjohnson.pokebinder.ui.binder.BinderEditorFragment
 import com.adamjohnson.pokebinder.ui.detail.PageDetailFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.DraftsViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
@@ -169,7 +169,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
             getString(R.string.binders_item_untitled)
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.binders_delete_title))
             .setMessage(getString(R.string.binders_delete_message, title))
             .setNegativeButton(R.string.binders_delete_cancel, null)

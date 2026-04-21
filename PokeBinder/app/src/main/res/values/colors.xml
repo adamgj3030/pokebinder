@@ -2,4 +2,31 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="poke_red">#D84A4A</color>
+    <color name="poke_red_dark">#A72C36</color>
+    <color name="poke_red_deep">#7A1621</color>
+
+    <color name="poke_gold">#F4C542</color>
+    <color name="poke_gold_dark">#C99816</color>
+
+    <color name="poke_screen_top">#FFF8ED</color>
+    <color name="poke_screen_bottom">#FCE9C7</color>
+
+    <color name="poke_surface">#FFFDF8</color>
+    <color name="poke_surface_elevated">#FFFFFE</color>
+    <color name="poke_surface_alt">#FFF3DA</color>
+    <color name="poke_slot">#FFF0D6</color>
+    <color name="poke_comment_surface">#FFF8EA</color>
+
+    <color name="poke_binder_surface_top">#D8D4CF</color>
+    <color name="poke_binder_surface_bottom">#C5C1BA</color>
+    <color name="poke_binder_edge">#9D978E</color>
+
+    <color name="poke_line_soft">#E9D7AF</color>
+    <color name="poke_line_strong">#D8AF45</color>
+
+    <color name="poke_text">#2F2418</color>
+    <color name="poke_text_secondary">#6C5B48</color>
+    <color name="poke_text_on_red">#FFF9F2</color>
 </resources>

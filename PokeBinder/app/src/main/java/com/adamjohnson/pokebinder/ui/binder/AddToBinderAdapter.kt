@@ -11,7 +11,8 @@ import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.bumptech.glide.Glide
 
 class AddToBinderAdapter(
-    private val onCardClick: (PokemonCard) -> Unit
+    private val onCardClick: (PokemonCard) -> Unit,
+    private val onCardLongClick: (PokemonCard) -> Unit
 ) : RecyclerView.Adapter<AddToBinderAdapter.AddToBinderViewHolder>() {
 
     private val cards = mutableListOf<PokemonCard>()
@@ -38,7 +39,8 @@ class AddToBinderAdapter(
         holder.bind(
             card = card,
             isSelected = selectedCardIds.contains(card.cardId),
-            onCardClick = onCardClick
+            onCardClick = onCardClick,
+            onCardLongClick = onCardLongClick
         )
     }
 
@@ -50,8 +52,6 @@ class AddToBinderAdapter(
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
         private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
-        private val setNameTextView: TextView = itemView.findViewById(R.id.setNameTextView)
-        private val typesTextView: TextView = itemView.findViewById(R.id.typesTextView)
         private val selectionOverlayView: View = itemView.findViewById(R.id.selectionOverlayView)
         private val removeSelectionTextView: TextView =
             itemView.findViewById(R.id.removeSelectionTextView)
@@ -59,18 +59,10 @@ class AddToBinderAdapter(
         fun bind(
             card: PokemonCard,
             isSelected: Boolean,
-            onCardClick: (PokemonCard) -> Unit
+            onCardClick: (PokemonCard) -> Unit,
+            onCardLongClick: (PokemonCard) -> Unit
         ) {
-            cardNameTextView.text = card.name
-            setNameTextView.text = card.setName
-
-            val typesText = if (card.types.isEmpty()) {
-                "No type"
-            } else {
-                "Type: ${card.types.joinToString(", ")}"
-            }
-
-            typesTextView.text = typesText
+            cardNameTextView.text = card.name.ifBlank { card.cardId }
 
             Glide.with(itemView)
                 .load(card.imageUrl)
@@ -83,6 +75,11 @@ class AddToBinderAdapter(
 
             itemView.setOnClickListener {
                 onCardClick(card)
+            }
+
+            itemView.setOnLongClickListener {
+                onCardLongClick(card)
+                true
             }
 
             removeSelectionTextView.setOnClickListener {

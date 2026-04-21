@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -14,10 +16,11 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.fragment.app.setFragmentResult
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.PokemonCard
+import com.adamjohnson.pokebinder.ui.cardpreview.PokemonCardPreviewDialogFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.AddToBinderViewModel
 
@@ -26,6 +29,8 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
     private val addToBinderViewModel: AddToBinderViewModel by viewModels()
 
     private lateinit var addToBinderAdapter: AddToBinderAdapter
+
+    private var isFilterPanelVisible = false
 
     override fun onStart() {
         super.onStart()
@@ -38,7 +43,12 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        isFilterPanelVisible = savedInstanceState?.getBoolean(STATE_FILTER_PANEL_VISIBLE) ?: false
+
         val cancelButton: Button = view.findViewById(R.id.cancelButton)
+        val searchToggleButton: ImageButton = view.findViewById(R.id.searchToggleButton)
+        val searchFiltersContainer: View = view.findViewById(R.id.searchFiltersContainer)
+        val applySearchButton: Button = view.findViewById(R.id.applySearchButton)
         val addButton: Button = view.findViewById(R.id.addButton)
         val clearFiltersButton: Button = view.findViewById(R.id.clearFiltersButton)
         val selectedCountTextView: TextView = view.findViewById(R.id.selectedCountTextView)
@@ -47,6 +57,11 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
         val setSearchEditText: AutoCompleteTextView = view.findViewById(R.id.setSearchEditText)
         val typeSearchEditText: AutoCompleteTextView = view.findViewById(R.id.typeSearchEditText)
         val cardIdSearchEditText: EditText = view.findViewById(R.id.cardIdSearchEditText)
+        val subtypeSearchEditText: AutoCompleteTextView =
+            view.findViewById(R.id.subtypeSearchEditText)
+        val raritySearchEditText: AutoCompleteTextView =
+            view.findViewById(R.id.raritySearchEditText)
+        val fullArtOnlyCheckBox: CheckBox = view.findViewById(R.id.fullArtOnlyCheckBox)
 
         val cardResultsRecyclerView: RecyclerView = view.findViewById(R.id.cardResultsRecyclerView)
         val loadingView: View = view.findViewById(R.id.loadingView)
@@ -57,15 +72,28 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
         val startSlotIndex = arguments?.getInt(ARG_START_SLOT_INDEX, 0) ?: 0
         val maxSelectable = arguments?.getInt(ARG_MAX_SELECTABLE, 0) ?: 0
 
-        addToBinderAdapter = AddToBinderAdapter { card ->
-            handleCardTapped(card)
-        }
+        addToBinderAdapter = AddToBinderAdapter(
+            onCardClick = { card ->
+                handleCardTapped(card)
+            },
+            onCardLongClick = { card ->
+                showCardPreview(card)
+            }
+        )
 
-        cardResultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        cardResultsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
         cardResultsRecyclerView.adapter = addToBinderAdapter
 
         cancelButton.setOnClickListener {
             dismiss()
+        }
+
+        searchToggleButton.setOnClickListener {
+            setFilterPanelVisible(searchFiltersContainer, !isFilterPanelVisible)
+        }
+
+        applySearchButton.setOnClickListener {
+            setFilterPanelVisible(searchFiltersContainer, false)
         }
 
         addButton.setOnClickListener {
@@ -117,6 +145,26 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
             }
         }
 
+        subtypeSearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (addToBinderViewModel.subtypeQuery.value != query) {
+                addToBinderViewModel.updateSubtypeQuery(query)
+            }
+        }
+
+        raritySearchEditText.doAfterTextChanged { editable ->
+            val query = editable?.toString().orEmpty()
+            if (addToBinderViewModel.rarityQuery.value != query) {
+                addToBinderViewModel.updateRarityQuery(query)
+            }
+        }
+
+        fullArtOnlyCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (addToBinderViewModel.fullArtOnly.value != isChecked) {
+                addToBinderViewModel.updateFullArtOnly(isChecked)
+            }
+        }
+
         addToBinderViewModel.nameQuery.observe(viewLifecycleOwner) { query ->
             syncText(nameSearchEditText, query)
         }
@@ -133,6 +181,20 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
             syncText(cardIdSearchEditText, query)
         }
 
+        addToBinderViewModel.subtypeQuery.observe(viewLifecycleOwner) { query ->
+            syncText(subtypeSearchEditText, query)
+        }
+
+        addToBinderViewModel.rarityQuery.observe(viewLifecycleOwner) { query ->
+            syncText(raritySearchEditText, query)
+        }
+
+        addToBinderViewModel.fullArtOnly.observe(viewLifecycleOwner) { enabled ->
+            if (fullArtOnlyCheckBox.isChecked != enabled) {
+                fullArtOnlyCheckBox.isChecked = enabled
+            }
+        }
+
         addToBinderViewModel.nameSuggestions.observe(viewLifecycleOwner) { suggestions ->
             bindSuggestions(nameSearchEditText, suggestions)
         }
@@ -143,6 +205,14 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
 
         addToBinderViewModel.typeSuggestions.observe(viewLifecycleOwner) { suggestions ->
             bindSuggestions(typeSearchEditText, suggestions)
+        }
+
+        addToBinderViewModel.subtypeSuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(subtypeSearchEditText, suggestions)
+        }
+
+        addToBinderViewModel.raritySuggestions.observe(viewLifecycleOwner) { suggestions ->
+            bindSuggestions(raritySearchEditText, suggestions)
         }
 
         addToBinderViewModel.maxSelectable.observe(viewLifecycleOwner) { latestMaxSelectable ->
@@ -218,6 +288,33 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
         addToBinderViewModel.setMaxSelectable(maxSelectable)
         addToBinderViewModel.loadSavedCards()
         addButton.isEnabled = false
+        setFilterPanelVisible(searchFiltersContainer, isFilterPanelVisible)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_FILTER_PANEL_VISIBLE, isFilterPanelVisible)
+    }
+
+    private fun showCardPreview(card: PokemonCard) {
+        if (!isAdded) {
+            return
+        }
+
+        if (childFragmentManager.findFragmentByTag(PokemonCardPreviewDialogFragment.TAG) != null) {
+            return
+        }
+
+        PokemonCardPreviewDialogFragment.newInstance(card.cardId)
+            .show(childFragmentManager, PokemonCardPreviewDialogFragment.TAG)
+    }
+
+    private fun setFilterPanelVisible(
+        searchFiltersContainer: View,
+        visible: Boolean
+    ) {
+        isFilterPanelVisible = visible
+        searchFiltersContainer.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private fun handleCardTapped(card: PokemonCard) {
@@ -235,9 +332,10 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
         selectedCountTextView.text = "${selectedCardIds.size}/$maxSelectable"
     }
 
-    private fun syncText(textView: TextView, value: String) {
-        if (textView.text.toString() != value) {
-            textView.text = value
+    private fun syncText(editText: EditText, value: String) {
+        if (editText.text.toString() != value) {
+            editText.setText(value)
+            editText.setSelection(value.length)
         }
     }
 
@@ -266,7 +364,10 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
         return addToBinderViewModel.nameQuery.value.orEmpty().isNotBlank() ||
                 addToBinderViewModel.setQuery.value.orEmpty().isNotBlank() ||
                 addToBinderViewModel.typeQuery.value.orEmpty().isNotBlank() ||
-                addToBinderViewModel.cardIdQuery.value.orEmpty().isNotBlank()
+                addToBinderViewModel.cardIdQuery.value.orEmpty().isNotBlank() ||
+                addToBinderViewModel.subtypeQuery.value.orEmpty().isNotBlank() ||
+                addToBinderViewModel.rarityQuery.value.orEmpty().isNotBlank() ||
+                (addToBinderViewModel.fullArtOnly.value ?: false)
     }
 
     companion object {
@@ -277,6 +378,7 @@ class AddToBinderDialogFragment : DialogFragment(R.layout.fragment_add_to_binder
 
         private const val ARG_START_SLOT_INDEX = "argStartSlotIndex"
         private const val ARG_MAX_SELECTABLE = "argMaxSelectable"
+        private const val STATE_FILTER_PANEL_VISIBLE = "stateFilterPanelVisible"
 
         fun newInstance(
             startSlotIndex: Int,

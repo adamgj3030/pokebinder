@@ -3,9 +3,9 @@ package com.adamjohnson.pokebinder.ui.cardsearch
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.PokemonCard
@@ -49,9 +49,7 @@ class CardSearchAdapter(
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
         private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
-        private val setNameTextView: TextView = itemView.findViewById(R.id.setNameTextView)
-        private val typesTextView: TextView = itemView.findViewById(R.id.typesTextView)
-        private val saveButton: Button = itemView.findViewById(R.id.saveButton)
+        private val saveButton: TextView = itemView.findViewById(R.id.saveButton)
 
         fun bind(
             card: PokemonCard,
@@ -59,19 +57,9 @@ class CardSearchAdapter(
             onSaveToggleClick: (PokemonCard) -> Unit,
             onCardClick: ((PokemonCard) -> Unit)?
         ) {
-            cardNameTextView.text = card.name
-            setNameTextView.text = card.setName
+            val context = itemView.context
 
-            val typesText = if (card.types.isEmpty()) {
-                itemView.context.getString(R.string.card_types_placeholder)
-            } else {
-                itemView.context.getString(
-                    R.string.card_types_label,
-                    card.types.joinToString(", ")
-                )
-            }
-
-            typesTextView.text = typesText
+            cardNameTextView.text = card.name.ifBlank { card.cardId }
 
             Glide.with(itemView)
                 .load(card.imageUrl)
@@ -80,10 +68,25 @@ class CardSearchAdapter(
                 .into(cardImageView)
 
             saveButton.text = if (isSaved) {
-                itemView.context.getString(R.string.saved_in_collection)
+                context.getString(R.string.saved_in_collection)
             } else {
-                itemView.context.getString(R.string.save_to_collection)
+                context.getString(R.string.save_to_collection)
             }
+
+            saveButton.setBackgroundResource(
+                if (isSaved) {
+                    R.drawable.bg_cta_primary
+                } else {
+                    R.drawable.bg_cta_secondary
+                }
+            )
+
+            saveButton.setTextColor(
+                ContextCompat.getColor(
+                    context,
+                    if (isSaved) android.R.color.white else R.color.poke_text
+                )
+            )
 
             saveButton.setOnClickListener {
                 onSaveToggleClick(card)

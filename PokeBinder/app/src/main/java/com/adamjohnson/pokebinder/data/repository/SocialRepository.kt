@@ -4,6 +4,7 @@ import com.adamjohnson.pokebinder.data.model.Comment
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 class SocialRepository(
@@ -42,6 +43,34 @@ class SocialRepository(
                     )
                 }
         }
+    }
+
+    fun listenToComments(
+        pageId: String,
+        onResult: (List<Comment>?, String?) -> Unit
+    ): ListenerRegistration? {
+        if (pageId.isBlank()) {
+            onResult(null, "Invalid page.")
+            return null
+        }
+
+        return commentsCollection(pageId)
+            .orderBy(FIELD_CREATED_AT, Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    onResult(
+                        null,
+                        exception.localizedMessage ?: "Unable to load comments."
+                    )
+                    return@addSnapshotListener
+                }
+
+                val comments = snapshot?.documents.orEmpty().map { document ->
+                    documentToComment(pageId, document)
+                }
+
+                onResult(comments, null)
+            }
     }
 
     fun addComment(
@@ -146,6 +175,36 @@ class SocialRepository(
                     )
                 }
         }
+    }
+
+    fun listenToPageLikeStatus(
+        pageId: String,
+        userId: String,
+        onResult: (Boolean?, String?) -> Unit
+    ): ListenerRegistration? {
+        if (pageId.isBlank()) {
+            onResult(null, "Invalid page.")
+            return null
+        }
+
+        if (userId.isBlank()) {
+            onResult(null, "Invalid user.")
+            return null
+        }
+
+        return likesCollection(pageId)
+            .document(userId)
+            .addSnapshotListener { document, exception ->
+                if (exception != null) {
+                    onResult(
+                        null,
+                        exception.localizedMessage ?: "Unable to check page like status."
+                    )
+                    return@addSnapshotListener
+                }
+
+                onResult(document?.exists() == true, null)
+            }
     }
 
     fun toggleLike(

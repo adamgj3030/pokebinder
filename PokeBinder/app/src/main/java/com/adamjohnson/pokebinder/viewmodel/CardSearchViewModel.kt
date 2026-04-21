@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
+import com.adamjohnson.pokebinder.data.model.CardFilter
 import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
 import com.adamjohnson.pokebinder.data.repository.CardRepository
@@ -34,6 +35,15 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
     private val _cardIdQuery = MutableLiveData("")
     val cardIdQuery: LiveData<String> = _cardIdQuery
 
+    private val _subtypeQuery = MutableLiveData("")
+    val subtypeQuery: LiveData<String> = _subtypeQuery
+
+    private val _rarityQuery = MutableLiveData("")
+    val rarityQuery: LiveData<String> = _rarityQuery
+
+    private val _fullArtOnly = MutableLiveData(false)
+    val fullArtOnly: LiveData<Boolean> = _fullArtOnly
+
     private val _savedCardIds = MutableLiveData<Set<String>>(emptySet())
     val savedCardIds: LiveData<Set<String>> = _savedCardIds
 
@@ -45,6 +55,12 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _typeSuggestions = MutableLiveData<List<String>>(emptyList())
     val typeSuggestions: LiveData<List<String>> = _typeSuggestions
+
+    private val _subtypeSuggestions = MutableLiveData<List<String>>(emptyList())
+    val subtypeSuggestions: LiveData<List<String>> = _subtypeSuggestions
+
+    private val _raritySuggestions = MutableLiveData<List<String>>(emptyList())
+    val raritySuggestions: LiveData<List<String>> = _raritySuggestions
 
     init {
         loadCards()
@@ -75,11 +91,29 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
         runSearch()
     }
 
+    fun updateSubtypeQuery(query: String) {
+        _subtypeQuery.value = query
+        runSearch()
+    }
+
+    fun updateRarityQuery(query: String) {
+        _rarityQuery.value = query
+        runSearch()
+    }
+
+    fun updateFullArtOnly(enabled: Boolean) {
+        _fullArtOnly.value = enabled
+        runSearch()
+    }
+
     fun clearFilters() {
         _nameQuery.value = ""
         _setQuery.value = ""
         _typeQuery.value = ""
         _cardIdQuery.value = ""
+        _subtypeQuery.value = ""
+        _rarityQuery.value = ""
+        _fullArtOnly.value = false
         runSearch()
     }
 
@@ -138,12 +172,7 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun runSearch() {
         try {
-            val cards = cardRepository.filterPokemonCards(
-                nameQuery = _nameQuery.value.orEmpty(),
-                setQuery = _setQuery.value.orEmpty(),
-                typeQuery = _typeQuery.value.orEmpty(),
-                cardIdQuery = _cardIdQuery.value.orEmpty()
-            )
+            val cards = cardRepository.filterPokemonCards(currentFilter())
 
             _cardsState.value = UiState.Success(cards)
             refreshSuggestions()
@@ -153,15 +182,35 @@ class CardSearchViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    private fun currentFilter(): CardFilter {
+        return CardFilter(
+            nameQuery = _nameQuery.value.orEmpty(),
+            setQuery = _setQuery.value.orEmpty(),
+            typeQuery = _typeQuery.value.orEmpty(),
+            cardIdQuery = _cardIdQuery.value.orEmpty(),
+            subtypeQuery = _subtypeQuery.value.orEmpty(),
+            rarityQuery = _rarityQuery.value.orEmpty(),
+            fullArtOnly = _fullArtOnly.value ?: false
+        )
+    }
+
     private fun refreshSuggestions() {
         _nameSuggestions.value = cardRepository.getNameSuggestions(_nameQuery.value.orEmpty())
         _setSuggestions.value = cardRepository.getSetSuggestions(_setQuery.value.orEmpty())
         _typeSuggestions.value = cardRepository.getTypeSuggestions(_typeQuery.value.orEmpty())
+        _subtypeSuggestions.value = cardRepository.getSubtypeSuggestions(
+            _subtypeQuery.value.orEmpty()
+        )
+        _raritySuggestions.value = cardRepository.getRaritySuggestions(
+            _rarityQuery.value.orEmpty()
+        )
     }
 
     private fun clearSuggestions() {
         _nameSuggestions.value = emptyList()
         _setSuggestions.value = emptyList()
         _typeSuggestions.value = emptyList()
+        _subtypeSuggestions.value = emptyList()
+        _raritySuggestions.value = emptyList()
     }
 }

@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@drawable/bg_app_screen">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,14 +13,22 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_section_surface"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="14dp">
 
             <Button
                 android:id="@+id/cancelButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel" />
+                android:background="@drawable/bg_cta_secondary"
+                android:backgroundTint="@null"
+                android:minHeight="44dp"
+                android:paddingHorizontal="14dp"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/poke_text" />
 
             <TextView
                 android:layout_width="0dp"
@@ -29,66 +37,185 @@
                 android:layout_weight="1"
                 android:text="Add to Binder"
                 android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@color/poke_text"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/selectedCountTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_counter_chip"
+                android:gravity="center"
+                android:minWidth="54dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
                 android:text="0/0"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textColor="@color/poke_text"
                 android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/searchToggleButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_topbar_icon_button"
+                android:contentDescription="Show search and filters"
+                android:padding="10dp"
+                android:src="@android:drawable/ic_menu_search"
+                android:tint="@color/poke_red_dark" />
         </LinearLayout>
 
-        <AutoCompleteTextView
-            android:id="@+id/nameSearchEditText"
+        <LinearLayout
+            android:id="@+id/searchFiltersContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Name" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_section_surface"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:visibility="gone">
 
-        <AutoCompleteTextView
-            android:id="@+id/setSearchEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Set" />
+            <AutoCompleteTextView
+                android:id="@+id/nameSearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_binder_slot"
+                android:completionThreshold="1"
+                android:hint="Name"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
 
-        <AutoCompleteTextView
-            android:id="@+id/typeSearchEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Type" />
+            <AutoCompleteTextView
+                android:id="@+id/setSearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_binder_slot"
+                android:completionThreshold="1"
+                android:hint="Set"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
 
-        <EditText
-            android:id="@+id/cardIdSearchEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Card ID" />
+            <AutoCompleteTextView
+                android:id="@+id/typeSearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_binder_slot"
+                android:completionThreshold="1"
+                android:hint="Type"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
 
-        <Button
-            android:id="@+id/clearFiltersButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Clear Filters" />
+            <EditText
+                android:id="@+id/cardIdSearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_binder_slot"
+                android:hint="Card ID"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
+
+            <AutoCompleteTextView
+                android:id="@+id/subtypeSearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_binder_slot"
+                android:completionThreshold="1"
+                android:hint="Subtype"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
+
+            <AutoCompleteTextView
+                android:id="@+id/raritySearchEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_binder_slot"
+                android:completionThreshold="1"
+                android:hint="Rarity"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/poke_text"
+                android:textColorHint="@color/poke_text_secondary" />
+
+            <CheckBox
+                android:id="@+id/fullArtOnlyCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:buttonTint="@color/poke_red_dark"
+                android:text="Full Art only"
+                android:textColor="@color/poke_text" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="end"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/clearFiltersButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_cta_secondary"
+                    android:backgroundTint="@null"
+                    android:minHeight="44dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="Clear"
+                    android:textAllCaps="false"
+                    android:textColor="@color/poke_text" />
+
+                <Button
+                    android:id="@+id/applySearchButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_cta_primary"
+                    android:backgroundTint="@null"
+                    android:minHeight="44dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="Search"
+                    android:textAllCaps="false"
+                    android:textColor="@color/poke_text_on_red" />
+            </LinearLayout>
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/cardResultsRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="12dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
 
         <Button
             android:id="@+id/addButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:background="@drawable/bg_cta_primary"
+            android:backgroundTint="@null"
             android:enabled="false"
-            android:text="Add" />
+            android:minHeight="48dp"
+            android:text="Add Selected Cards"
+            android:textAllCaps="false"
+            android:textColor="@color/poke_text_on_red" />
     </LinearLayout>
 
     <FrameLayout
@@ -97,10 +224,19 @@
         android:layout_height="match_parent"
         android:visibility="gone">
 
-        <ProgressBar
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:background="@drawable/bg_section_surface"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </FrameLayout>
 
     <LinearLayout
@@ -109,25 +245,35 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp"
         android:visibility="gone">
 
-        <TextView
-            android:id="@+id/emptyTitleTextView"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No saved cards"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/emptyMessageTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_section_surface"
             android:gravity="center"
-            android:text="Save some cards first, then add them to your binder."
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/emptyTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No saved cards"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="@color/poke_text"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/emptyMessageTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Save some cards first, then add them to your binder."
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/poke_text_secondary" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

@@ -15,9 +15,37 @@ class PokemonCardAssetLoader(
             reader.readText()
         }
 
-        val listType = object : TypeToken<List<PokemonCard>>() {}.type
-        return gson.fromJson(json, listType) ?: emptyList()
+        val listType = object : TypeToken<List<PokemonCardAssetDto>>() {}.type
+        val rawCards: List<PokemonCardAssetDto> = gson.fromJson(json, listType) ?: emptyList()
+
+        return rawCards.map { rawCard ->
+            PokemonCard(
+                cardId = rawCard.cardId.orEmpty(),
+                name = rawCard.name.orEmpty(),
+                imageUrl = rawCard.imageUrl.orEmpty(),
+                setName = rawCard.setName.orEmpty(),
+                types = sanitizeList(rawCard.types),
+                subtypes = sanitizeList(rawCard.subtypes),
+                rarity = rawCard.rarity.orEmpty()
+            )
+        }
     }
+
+    private fun sanitizeList(values: List<String>?): List<String> {
+        return values.orEmpty()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+    }
+
+    private data class PokemonCardAssetDto(
+        val cardId: String? = null,
+        val name: String? = null,
+        val imageUrl: String? = null,
+        val setName: String? = null,
+        val types: List<String>? = null,
+        val subtypes: List<String>? = null,
+        val rarity: String? = null
+    )
 
     companion object {
         private const val ASSET_FILE_NAME = "pokemon_cards.json"

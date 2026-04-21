@@ -16,12 +16,12 @@ import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.BinderPage
 import com.adamjohnson.pokebinder.data.model.Comment
+import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.CardRepository
+import com.adamjohnson.pokebinder.ui.cardpreview.PokemonCardImageBinder
+import com.adamjohnson.pokebinder.ui.cardpreview.PokemonCardPreviewDialogFragment
 import com.adamjohnson.pokebinder.utils.UiState
 import com.adamjohnson.pokebinder.viewmodel.PageDetailViewModel
-import com.bumptech.glide.Glide
-import java.text.DateFormat
-import java.util.Date
 
 class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
 
@@ -35,9 +35,8 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
     private lateinit var commentsAdapter: CommentsAdapter
 
     private lateinit var contentScrollView: View
-    private lateinit var pageTitleTextView: TextView
+    private lateinit var titleTextView: TextView
     private lateinit var creatorUsernameTextView: TextView
-    private lateinit var publishedAtTextView: TextView
     private lateinit var likeCountTextView: TextView
     private lateinit var commentCountTextView: TextView
     private lateinit var likeButton: Button
@@ -50,16 +49,14 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
     private lateinit var pageMessageTextView: TextView
     private lateinit var loadingView: View
 
-    private var shouldRefreshOnNextResume = false
     private var suppressCommentTextWatcher = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         contentScrollView = view.findViewById(R.id.contentScrollView)
-        pageTitleTextView = view.findViewById(R.id.pageTitleTextView)
+        titleTextView = view.findViewById(R.id.titleTextView)
         creatorUsernameTextView = view.findViewById(R.id.creatorUsernameTextView)
-        publishedAtTextView = view.findViewById(R.id.publishedAtTextView)
         likeCountTextView = view.findViewById(R.id.likeCountTextView)
         commentCountTextView = view.findViewById(R.id.commentCountTextView)
         likeButton = view.findViewById(R.id.likeButton)
@@ -165,23 +162,20 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             }
         }
 
-        shouldRefreshOnNextResume = false
         renderInteractionControls()
 
         val pageId = arguments?.getString(ARG_PAGE_ID).orEmpty()
-        pageDetailViewModel.loadPage(pageId)
+        pageDetailViewModel.setPage(pageId)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
+        pageDetailViewModel.startListening()
+    }
 
-        if (shouldRefreshOnNextResume) {
-            commentEditText.error = null
-            pageDetailViewModel.clearCommentSubmissionState()
-            pageDetailViewModel.refreshCurrentPage()
-        } else {
-            shouldRefreshOnNextResume = true
-        }
+    override fun onStop() {
+        super.onStop()
+        pageDetailViewModel.stopListening()
     }
 
     private fun renderLoading() {
@@ -196,7 +190,7 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         contentScrollView.visibility = View.VISIBLE
         pageMessageTextView.visibility = View.GONE
 
-        pageTitleTextView.text = binderPage.title.ifBlank {
+        titleTextView.text = binderPage.title.ifBlank {
             getString(R.string.page_detail_untitled)
         }
 
@@ -215,23 +209,6 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             R.string.page_detail_comment_count,
             binderPage.commentCount
         )
-
-        val publishedAt = binderPage.publishedAt ?: 0L
-        if (publishedAt > 0L) {
-            val formattedPublishedAt = DateFormat.getDateTimeInstance(
-                DateFormat.MEDIUM,
-                DateFormat.SHORT
-            ).format(Date(publishedAt))
-
-            publishedAtTextView.text = getString(
-                R.string.page_detail_published_at,
-                formattedPublishedAt
-            )
-            publishedAtTextView.visibility = View.VISIBLE
-        } else {
-            publishedAtTextView.text = ""
-            publishedAtTextView.visibility = View.GONE
-        }
 
         renderSlotImages(binderPage)
         renderInteractionControls()
@@ -258,8 +235,8 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
         if (comments.isEmpty()) {
             commentsAdapter.submitList(emptyList())
             commentsRecyclerView.visibility = View.GONE
-            commentsMessageTextView.text = getString(R.string.page_detail_comments_empty_message)
             commentsMessageTextView.visibility = View.VISIBLE
+            commentsMessageTextView.text = getString(R.string.page_detail_comments_empty_message)
         } else {
             commentsAdapter.submitList(comments)
             commentsRecyclerView.visibility = View.VISIBLE
@@ -268,21 +245,31 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
     }
 
     private fun renderCommentsError(message: String) {
-        commentsLoadingView.visibility = View.GONE
         commentsAdapter.submitList(emptyList())
         commentsRecyclerView.visibility = View.GONE
-        commentsMessageTextView.text = message
+        commentsLoadingView.visibility = View.GONE
         commentsMessageTextView.visibility = View.VISIBLE
+        commentsMessageTextView.text = message
     }
 
     private fun renderInteractionControls() {
+        val isSignedIn = pageDetailViewModel.userSignedInState.value == true
+
+        likeButton.isEnabled = isSignedIn && pageDetailViewModel.isLikeLoading.value != true
+
+        if (isSignedIn) {
+            commentEditText.isEnabled = true
+            commentEditText.hint = getString(R.string.page_detail_comment_hint)
+        } else {
+            commentEditText.isEnabled = false
+            commentEditText.hint = getString(R.string.page_detail_comment_sign_in_hint)
+        }
+
         renderLikeButton()
         renderCommentControls()
-        renderCommentSubmissionMessage(pageDetailViewModel.commentSubmissionState.value)
     }
 
     private fun renderLikeButton() {
-        val isPageVisible = contentScrollView.visibility == View.VISIBLE
         val isSignedIn = pageDetailViewModel.userSignedInState.value == true
         val isLiked = pageDetailViewModel.isLiked.value == true
         val isLikeLoading = pageDetailViewModel.isLikeLoading.value == true
@@ -294,66 +281,45 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             else -> getString(R.string.page_detail_like)
         }
 
-        likeButton.isEnabled = isPageVisible && isSignedIn && !isLikeLoading
+        likeButton.isEnabled = isSignedIn && !isLikeLoading
     }
 
     private fun renderCommentControls() {
-        val isPageVisible = contentScrollView.visibility == View.VISIBLE
         val isSignedIn = pageDetailViewModel.userSignedInState.value == true
-        val isSubmitting = pageDetailViewModel.commentSubmissionState.value == UiState.Loading
-        val hasCommentText = commentEditText.text.toString().trim().isNotBlank()
+        val submissionState = pageDetailViewModel.commentSubmissionState.value
+        val isSubmitting = submissionState == UiState.Loading
+        val hasText = commentEditText.text?.toString().orEmpty().trim().isNotBlank()
 
-        commentEditText.hint = if (isSignedIn) {
-            getString(R.string.page_detail_comment_hint)
+        submitCommentButton.text = if (isSubmitting) {
+            getString(R.string.page_detail_comment_submit_loading)
         } else {
-            getString(R.string.page_detail_comment_sign_in_hint)
+            getString(R.string.page_detail_submit_comment)
         }
 
-        commentEditText.isEnabled = isPageVisible && isSignedIn && !isSubmitting
-
-        submitCommentButton.text = when {
-            isSubmitting -> getString(R.string.page_detail_comment_submit_loading)
-            !isSignedIn -> getString(R.string.page_detail_sign_in_to_comment)
-            else -> getString(R.string.page_detail_submit_comment)
-        }
-
-        submitCommentButton.isEnabled =
-            isPageVisible && isSignedIn && !isSubmitting && hasCommentText
+        submitCommentButton.isEnabled = isSignedIn && !isSubmitting && hasText
+        commentEditText.isEnabled = isSignedIn && !isSubmitting
     }
 
     private fun renderCommentSubmissionMessage(state: UiState<Comment>?) {
-        val isPageVisible = contentScrollView.visibility == View.VISIBLE
-        val isSignedIn = pageDetailViewModel.userSignedInState.value == true
-
-        if (!isPageVisible) {
-            commentSubmissionMessageTextView.visibility = View.GONE
-            return
-        }
-
-        when {
-            !isSignedIn -> {
-                commentSubmissionMessageTextView.text =
-                    getString(R.string.page_detail_sign_in_social_message)
-                commentSubmissionMessageTextView.visibility = View.VISIBLE
-            }
-
-            state == null -> {
+        when (state) {
+            null -> {
+                commentSubmissionMessageTextView.text = ""
                 commentSubmissionMessageTextView.visibility = View.GONE
             }
 
-            state == UiState.Loading -> {
+            UiState.Loading -> {
                 commentSubmissionMessageTextView.text =
                     getString(R.string.page_detail_comment_submit_loading)
                 commentSubmissionMessageTextView.visibility = View.VISIBLE
             }
 
-            state is UiState.Success -> {
+            is UiState.Success -> {
                 commentSubmissionMessageTextView.text =
                     getString(R.string.page_detail_comment_submit_success)
                 commentSubmissionMessageTextView.visibility = View.VISIBLE
             }
 
-            state is UiState.Error -> {
+            is UiState.Error -> {
                 commentSubmissionMessageTextView.text = state.message
                 commentSubmissionMessageTextView.visibility = View.VISIBLE
             }
@@ -369,29 +335,36 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
     private fun renderSlotImages(binderPage: BinderPage?) {
         slotImageViews.forEachIndexed { index, imageView ->
             val cardId = binderPage?.slots?.getOrNull(index)?.cardId
-            bindSlotImage(imageView, cardId)
+            val pokemonCard = if (cardId.isNullOrBlank()) {
+                null
+            } else {
+                cardRepository.getPokemonCard(cardId)
+            }
+
+            PokemonCardImageBinder.bind(imageView, pokemonCard) { clickedCard ->
+                showCardPreview(clickedCard)
+            }
+
+            if (pokemonCard == null) {
+                imageView.setImageResource(android.R.drawable.ic_menu_report_image)
+                imageView.alpha = 0.35f
+            } else {
+                imageView.alpha = 1f
+            }
         }
     }
 
-    private fun bindSlotImage(imageView: ImageView, cardId: String?) {
-        val pokemonCard = if (cardId.isNullOrBlank()) {
-            null
-        } else {
-            cardRepository.getPokemonCard(cardId)
+    private fun showCardPreview(card: PokemonCard) {
+        if (!isAdded) {
+            return
         }
 
-        if (pokemonCard == null) {
-            Glide.with(this).clear(imageView)
-            imageView.setImageResource(android.R.drawable.ic_menu_report_image)
-            imageView.alpha = 0.35f
-        } else {
-            imageView.alpha = 1f
-            Glide.with(this)
-                .load(pokemonCard.imageUrl)
-                .placeholder(android.R.drawable.ic_menu_report_image)
-                .error(android.R.drawable.ic_menu_report_image)
-                .into(imageView)
+        if (childFragmentManager.findFragmentByTag(PokemonCardPreviewDialogFragment.TAG) != null) {
+            return
         }
+
+        PokemonCardPreviewDialogFragment.newInstance(card.cardId)
+            .show(childFragmentManager, PokemonCardPreviewDialogFragment.TAG)
     }
 
     companion object {

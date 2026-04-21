@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
+import com.adamjohnson.pokebinder.data.model.CardFilter
 import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.AuthRepository
 import com.adamjohnson.pokebinder.data.repository.CardRepository
@@ -44,6 +45,15 @@ class AddToBinderViewModel(application: Application) : AndroidViewModel(applicat
     private val _cardIdQuery = MutableLiveData("")
     val cardIdQuery: LiveData<String> = _cardIdQuery
 
+    private val _subtypeQuery = MutableLiveData("")
+    val subtypeQuery: LiveData<String> = _subtypeQuery
+
+    private val _rarityQuery = MutableLiveData("")
+    val rarityQuery: LiveData<String> = _rarityQuery
+
+    private val _fullArtOnly = MutableLiveData(false)
+    val fullArtOnly: LiveData<Boolean> = _fullArtOnly
+
     private val _nameSuggestions = MutableLiveData<List<String>>(emptyList())
     val nameSuggestions: LiveData<List<String>> = _nameSuggestions
 
@@ -52,6 +62,12 @@ class AddToBinderViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _typeSuggestions = MutableLiveData<List<String>>(emptyList())
     val typeSuggestions: LiveData<List<String>> = _typeSuggestions
+
+    private val _subtypeSuggestions = MutableLiveData<List<String>>(emptyList())
+    val subtypeSuggestions: LiveData<List<String>> = _subtypeSuggestions
+
+    private val _raritySuggestions = MutableLiveData<List<String>>(emptyList())
+    val raritySuggestions: LiveData<List<String>> = _raritySuggestions
 
     fun setMaxSelectable(maxSelectable: Int) {
         maxSelectableCount = maxOf(0, maxSelectable)
@@ -118,11 +134,29 @@ class AddToBinderViewModel(application: Application) : AndroidViewModel(applicat
         publishFilteredCards()
     }
 
+    fun updateSubtypeQuery(query: String) {
+        _subtypeQuery.value = query
+        publishFilteredCards()
+    }
+
+    fun updateRarityQuery(query: String) {
+        _rarityQuery.value = query
+        publishFilteredCards()
+    }
+
+    fun updateFullArtOnly(enabled: Boolean) {
+        _fullArtOnly.value = enabled
+        publishFilteredCards()
+    }
+
     fun clearFilters() {
         _nameQuery.value = ""
         _setQuery.value = ""
         _typeQuery.value = ""
         _cardIdQuery.value = ""
+        _subtypeQuery.value = ""
+        _rarityQuery.value = ""
+        _fullArtOnly.value = false
         publishFilteredCards()
     }
 
@@ -151,62 +185,51 @@ class AddToBinderViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun publishFilteredCards() {
-        val filteredCards = filterSavedCards(
-            cards = allSavedCards,
-            nameQuery = _nameQuery.value.orEmpty(),
-            setQuery = _setQuery.value.orEmpty(),
-            typeQuery = _typeQuery.value.orEmpty(),
-            cardIdQuery = _cardIdQuery.value.orEmpty()
+        val filteredCards = cardRepository.filterPokemonCards(
+            filter = currentFilter(),
+            cards = allSavedCards
         )
 
         _cardsState.value = UiState.Success(filteredCards)
         refreshSuggestions()
     }
 
-    private fun filterSavedCards(
-        cards: List<PokemonCard>,
-        nameQuery: String,
-        setQuery: String,
-        typeQuery: String,
-        cardIdQuery: String
-    ): List<PokemonCard> {
-        val normalizedNameQuery = nameQuery.trim()
-        val normalizedSetQuery = setQuery.trim()
-        val normalizedTypeQuery = typeQuery.trim()
-        val normalizedCardIdQuery = cardIdQuery.trim()
-
-        return cards.filter { card ->
-            matchesText(card.name, normalizedNameQuery) &&
-                    matchesText(card.setName, normalizedSetQuery) &&
-                    matchesText(card.cardId, normalizedCardIdQuery) &&
-                    matchesTypes(card.types, normalizedTypeQuery)
-        }
-    }
-
-    private fun matchesText(value: String, query: String): Boolean {
-        return query.isBlank() || value.contains(query, ignoreCase = true)
-    }
-
-    private fun matchesTypes(types: List<String>, query: String): Boolean {
-        return query.isBlank() || types.any { type ->
-            type.contains(query, ignoreCase = true)
-        }
+    private fun currentFilter(): CardFilter {
+        return CardFilter(
+            nameQuery = _nameQuery.value.orEmpty(),
+            setQuery = _setQuery.value.orEmpty(),
+            typeQuery = _typeQuery.value.orEmpty(),
+            cardIdQuery = _cardIdQuery.value.orEmpty(),
+            subtypeQuery = _subtypeQuery.value.orEmpty(),
+            rarityQuery = _rarityQuery.value.orEmpty(),
+            fullArtOnly = _fullArtOnly.value ?: false
+        )
     }
 
     private fun refreshSuggestions() {
-        _nameSuggestions.value = getSuggestions(
+        _nameSuggestions.value = cardRepository.getNameSuggestions(
             query = _nameQuery.value.orEmpty(),
-            values = allSavedCards.map { it.name }
+            cards = allSavedCards
         )
 
-        _setSuggestions.value = getSuggestions(
+        _setSuggestions.value = cardRepository.getSetSuggestions(
             query = _setQuery.value.orEmpty(),
-            values = allSavedCards.map { it.setName }
+            cards = allSavedCards
         )
 
-        _typeSuggestions.value = getSuggestions(
+        _typeSuggestions.value = cardRepository.getTypeSuggestions(
             query = _typeQuery.value.orEmpty(),
-            values = allSavedCards.flatMap { it.types }
+            cards = allSavedCards
+        )
+
+        _subtypeSuggestions.value = cardRepository.getSubtypeSuggestions(
+            query = _subtypeQuery.value.orEmpty(),
+            cards = allSavedCards
+        )
+
+        _raritySuggestions.value = cardRepository.getRaritySuggestions(
+            query = _rarityQuery.value.orEmpty(),
+            cards = allSavedCards
         )
     }
 
@@ -214,29 +237,7 @@ class AddToBinderViewModel(application: Application) : AndroidViewModel(applicat
         _nameSuggestions.value = emptyList()
         _setSuggestions.value = emptyList()
         _typeSuggestions.value = emptyList()
-    }
-
-    private fun getSuggestions(
-        query: String,
-        values: List<String>,
-        limit: Int = 8
-    ): List<String> {
-        val trimmedQuery = query.trim()
-        if (trimmedQuery.isBlank()) {
-            return emptyList()
-        }
-
-        return values
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .filter { value ->
-                value.contains(trimmedQuery, ignoreCase = true)
-            }
-            .sortedWith(
-                compareBy<String> { !it.startsWith(trimmedQuery, ignoreCase = true) }
-                    .thenBy { it.lowercase() }
-            )
-            .take(limit)
+        _subtypeSuggestions.value = emptyList()
+        _raritySuggestions.value = emptyList()
     }
 }

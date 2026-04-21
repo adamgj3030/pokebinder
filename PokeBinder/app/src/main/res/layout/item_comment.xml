@@ -3,9 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_comment_item"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="14dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,6 +22,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textAppearance="?attr/textAppearanceTitleSmall"
+            android:textColor="@color/poke_text"
             android:textStyle="bold"
             tools:text="Adam Johnson" />
 
@@ -30,6 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="@color/poke_text_secondary"
             tools:text="Apr 19, 2026, 2:45 PM" />
     </LinearLayout>
 
@@ -37,8 +40,9 @@
         android:id="@+id/commentTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="@color/poke_text"
         tools:text="This binder page looks great. I like the card choices in the middle row." />
 
 </LinearLayout>

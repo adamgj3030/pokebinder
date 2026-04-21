@@ -1,9 +1,31 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.PokeBinder" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/poke_red</item>
+        <item name="colorOnPrimary">@color/poke_text_on_red</item>
+        <item name="colorSecondary">@color/poke_gold</item>
+        <item name="colorOnSecondary">@color/poke_text</item>
+        <item name="colorSurface">@color/poke_surface</item>
+        <item name="colorSurfaceContainer">@color/poke_surface_alt</item>
+        <item name="colorSurfaceContainerHigh">@color/poke_surface_elevated</item>
+        <item name="android:windowBackground">@color/poke_screen_top</item>
+        <item name="android:statusBarColor">@color/poke_screen_top</item>
+        <item name="android:navigationBarColor">@color/poke_surface_alt</item>
+        <item name="android:textColorPrimary">@color/poke_text</item>
+        <item name="android:textColorSecondary">@color/poke_text_secondary</item>
+        <item name="colorOutline">@color/poke_line_soft</item>
+        <item name="colorOutlineVariant">@color/poke_line_strong</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.PokeBinder.MaterialAlertDialog</item>
     </style>
 
     <style name="Theme.PokeBinder" parent="Base.Theme.PokeBinder" />
+
+    <style name="ThemeOverlay.PokeBinder.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/poke_surface_elevated</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlayPokeBinderDialog</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlayPokeBinderDialog">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
 </resources>
