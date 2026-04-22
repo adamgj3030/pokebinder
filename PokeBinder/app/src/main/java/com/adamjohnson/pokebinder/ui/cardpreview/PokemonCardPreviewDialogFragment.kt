@@ -14,7 +14,6 @@ import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.local.PokemonCardLocalDataSource
 import com.adamjohnson.pokebinder.data.model.PokemonCard
 import com.adamjohnson.pokebinder.data.repository.CardRepository
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class PokemonCardPreviewDialogFragment : DialogFragment(R.layout.dialog_pokemon_card_preview) {
 
@@ -43,10 +42,10 @@ class PokemonCardPreviewDialogFragment : DialogFragment(R.layout.dialog_pokemon_
         super.onViewCreated(view, savedInstanceState)
 
         val previewTitleTextView: TextView = view.findViewById(R.id.previewTitleTextView)
-        val previewSubtitleTextView: TextView = view.findViewById(R.id.previewSubtitleTextView)
+        val previewSetTextView: TextView = view.findViewById(R.id.previewSetTextView)
+        val previewMetadataTextView: TextView = view.findViewById(R.id.previewMetadataTextView)
         val previewImageView: ImageView = view.findViewById(R.id.previewImageView)
         val previewMessageTextView: TextView = view.findViewById(R.id.previewMessageTextView)
-        val detailsButton: Button = view.findViewById(R.id.detailsButton)
         val closeButton: Button = view.findViewById(R.id.closeButton)
 
         val cardId = arguments?.getString(ARG_CARD_ID).orEmpty()
@@ -58,21 +57,21 @@ class PokemonCardPreviewDialogFragment : DialogFragment(R.layout.dialog_pokemon_
 
         if (pokemonCard == null) {
             previewTitleTextView.text = getString(R.string.card_preview_title_fallback)
-            previewSubtitleTextView.text = cardId.ifBlank {
-                getString(R.string.card_preview_unknown_value)
-            }
-            previewImageView.setImageDrawable(null)
+            previewSetTextView.text = getString(R.string.card_preview_unknown_value)
+            previewMetadataTextView.text = ""
+            previewMetadataTextView.visibility = View.GONE
+            previewImageView.setImageResource(android.R.drawable.ic_menu_report_image)
+            previewImageView.alpha = 0.35f
             previewMessageTextView.text = getString(R.string.card_preview_unknown_card)
             previewMessageTextView.visibility = View.VISIBLE
-            detailsButton.isEnabled = false
         } else {
             bindPreviewCard(
                 pokemonCard = pokemonCard,
                 previewTitleTextView = previewTitleTextView,
-                previewSubtitleTextView = previewSubtitleTextView,
+                previewSetTextView = previewSetTextView,
+                previewMetadataTextView = previewMetadataTextView,
                 previewImageView = previewImageView,
-                previewMessageTextView = previewMessageTextView,
-                detailsButton = detailsButton
+                previewMessageTextView = previewMessageTextView
             )
         }
 
@@ -84,54 +83,38 @@ class PokemonCardPreviewDialogFragment : DialogFragment(R.layout.dialog_pokemon_
     private fun bindPreviewCard(
         pokemonCard: PokemonCard,
         previewTitleTextView: TextView,
-        previewSubtitleTextView: TextView,
+        previewSetTextView: TextView,
+        previewMetadataTextView: TextView,
         previewImageView: ImageView,
-        previewMessageTextView: TextView,
-        detailsButton: Button
+        previewMessageTextView: TextView
     ) {
         previewTitleTextView.text = pokemonCard.name.ifBlank {
             getString(R.string.card_preview_title_fallback)
         }
 
-        previewSubtitleTextView.text = getString(
-            R.string.card_preview_set_and_id,
-            pokemonCard.setName.ifBlank {
-                getString(R.string.card_preview_unknown_value)
-            },
-            pokemonCard.cardId.ifBlank {
-                getString(R.string.card_preview_unknown_value)
-            }
-        )
-
-        previewMessageTextView.visibility = View.GONE
-        PokemonCardImageBinder.bind(previewImageView, pokemonCard)
-
-        detailsButton.isEnabled = true
-        detailsButton.setOnClickListener {
-            showCardDetails(pokemonCard)
+        previewSetTextView.text = pokemonCard.setName.ifBlank {
+            getString(R.string.card_preview_unknown_value)
         }
-    }
 
-    private fun showCardDetails(pokemonCard: PokemonCard) {
         val typesText = if (pokemonCard.types.isEmpty()) {
             getString(R.string.card_preview_unknown_value)
         } else {
             pokemonCard.types.joinToString(", ")
         }
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.card_preview_details_title)
-            .setMessage(
-                getString(
-                    R.string.card_preview_details_message,
-                    pokemonCard.name.ifBlank { getString(R.string.card_preview_unknown_value) },
-                    pokemonCard.setName.ifBlank { getString(R.string.card_preview_unknown_value) },
-                    typesText,
-                    pokemonCard.cardId.ifBlank { getString(R.string.card_preview_unknown_value) }
-                )
-            )
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
+        val rarityText = pokemonCard.rarity.ifBlank {
+            getString(R.string.card_preview_unknown_value)
+        }
+
+        previewMetadataTextView.text = getString(
+            R.string.card_preview_type_and_rarity,
+            typesText,
+            rarityText
+        )
+        previewMetadataTextView.visibility = View.VISIBLE
+
+        previewMessageTextView.visibility = View.GONE
+        PokemonCardImageBinder.bind(previewImageView, pokemonCard)
     }
 
     companion object {

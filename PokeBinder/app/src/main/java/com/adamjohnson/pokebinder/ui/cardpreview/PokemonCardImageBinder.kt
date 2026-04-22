@@ -14,7 +14,8 @@ object PokemonCardImageBinder {
     ) {
         if (pokemonCard == null) {
             Glide.with(imageView).clear(imageView)
-            imageView.setImageDrawable(null)
+            imageView.setImageResource(android.R.drawable.ic_menu_report_image)
+            imageView.alpha = 0.35f
             imageView.isClickable = false
             imageView.isFocusable = false
             imageView.setOnClickListener(null)
@@ -22,8 +23,11 @@ object PokemonCardImageBinder {
             return
         }
 
+        imageView.alpha = 1f
+
         Glide.with(imageView)
             .load(pokemonCard.imageUrl)
+            .placeholder(android.R.drawable.ic_menu_report_image)
             .error(android.R.drawable.ic_menu_report_image)
             .into(imageView)
 

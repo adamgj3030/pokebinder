@@ -61,7 +61,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         val newBinderPage = emptyDraftPage(
             userId = userId,
-            title = title.trim()
+            title = title
         )
 
         currentBinderPage = newBinderPage
@@ -105,9 +105,11 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         _binderPageState.value = UiState.Loading
 
-        binderPageRepository.saveDraftPage(userId, currentBinderPage) { savedBinderPage, errorMessage ->
+        val binderPageToSave = normalizeBinderPageForPersistence(currentBinderPage)
+
+        binderPageRepository.saveDraftPage(userId, binderPageToSave) { savedBinderPage, errorMessage ->
             if (savedBinderPage != null) {
-                currentBinderPage = normalizeBinderPage(savedBinderPage)
+                currentBinderPage = normalizeBinderPageForEditing(savedBinderPage)
                 initializedPageId = currentBinderPage.pageId.takeIf { it.isNotBlank() }
                 updateCanPublish()
                 _binderPageState.postValue(UiState.Success(currentBinderPage))
@@ -153,9 +155,11 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         _binderPageState.value = UiState.Loading
 
-        binderPageRepository.publishPage(userId, currentBinderPage) { publishedBinderPage, errorMessage ->
+        val binderPageToPublish = normalizeBinderPageForPersistence(currentBinderPage)
+
+        binderPageRepository.publishPage(userId, binderPageToPublish) { publishedBinderPage, errorMessage ->
             if (publishedBinderPage != null) {
-                currentBinderPage = normalizeBinderPage(publishedBinderPage)
+                currentBinderPage = normalizeBinderPageForEditing(publishedBinderPage)
                 initializedPageId = currentBinderPage.pageId.takeIf { it.isNotBlank() }
                 updateCanPublish()
                 _binderPageState.postValue(UiState.Success(currentBinderPage))
@@ -246,7 +250,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
 
         binderPageRepository.getDraftPage(userId, pageId) { binderPage, errorMessage ->
             if (binderPage != null) {
-                currentBinderPage = normalizeBinderPage(binderPage)
+                currentBinderPage = normalizeBinderPageForEditing(binderPage)
                 updateCanPublish()
                 _binderPageState.postValue(UiState.Success(currentBinderPage))
             } else {
@@ -260,7 +264,7 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
     }
 
     private fun updateCurrentBinderPage(updatedBinderPage: BinderPage) {
-        currentBinderPage = normalizeBinderPage(updatedBinderPage)
+        currentBinderPage = normalizeBinderPageForEditing(updatedBinderPage)
         updateCanPublish()
         _binderPageState.value = UiState.Success(currentBinderPage)
     }
@@ -294,7 +298,14 @@ class BinderEditorViewModel(application: Application) : AndroidViewModel(applica
         return null
     }
 
-    private fun normalizeBinderPage(binderPage: BinderPage): BinderPage {
+    private fun normalizeBinderPageForEditing(binderPage: BinderPage): BinderPage {
+        return binderPage.copy(
+            title = binderPage.title,
+            slots = normalizeSlots(binderPage.slots)
+        )
+    }
+
+    private fun normalizeBinderPageForPersistence(binderPage: BinderPage): BinderPage {
         return binderPage.copy(
             title = binderPage.title.trim(),
             slots = normalizeSlots(binderPage.slots)

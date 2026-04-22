@@ -67,20 +67,30 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
                     }
                 }
             },
-            onCardClick = { card ->
+            onCardLongClick = { card ->
                 showCardPreview(card)
             }
         )
 
-        cardResultsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
+        cardResultsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         cardResultsRecyclerView.adapter = cardSearchAdapter
 
+        updateSearchToggleButtonDescription(searchToggleButton)
+
         searchToggleButton.setOnClickListener {
-            setFilterPanelVisible(searchFiltersContainer, !isFilterPanelVisible)
+            setFilterPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = !isFilterPanelVisible
+            )
         }
 
         applySearchButton.setOnClickListener {
-            setFilterPanelVisible(searchFiltersContainer, false)
+            setFilterPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = false
+            )
         }
 
         nameSearchEditText.doAfterTextChanged { editable ->
@@ -227,7 +237,11 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
             }
         }
 
-        setFilterPanelVisible(searchFiltersContainer, isFilterPanelVisible)
+        setFilterPanelVisible(
+            searchFiltersContainer = searchFiltersContainer,
+            searchToggleButton = searchToggleButton,
+            visible = isFilterPanelVisible
+        )
     }
 
     override fun onResume() {
@@ -256,10 +270,20 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
 
     private fun setFilterPanelVisible(
         searchFiltersContainer: View,
+        searchToggleButton: ImageButton,
         visible: Boolean
     ) {
         isFilterPanelVisible = visible
         searchFiltersContainer.visibility = if (visible) View.VISIBLE else View.GONE
+        updateSearchToggleButtonDescription(searchToggleButton)
+    }
+
+    private fun updateSearchToggleButtonDescription(searchToggleButton: ImageButton) {
+        searchToggleButton.contentDescription = if (isFilterPanelVisible) {
+            getString(R.string.hide_search_and_filters)
+        } else {
+            getString(R.string.show_search_and_filters)
+        }
     }
 
     private fun renderLoading(
@@ -293,7 +317,7 @@ class CardSearchFragment : Fragment(R.layout.fragment_card_search) {
             emptyStateView.visibility = View.VISIBLE
             emptyTitleTextView.text = getString(R.string.card_search_empty_title)
             emptyMessageTextView.text = if (hasActiveFilters()) {
-                "Try changing or clearing one of the filters."
+                getString(R.string.common_filters_empty_message)
             } else {
                 getString(R.string.card_search_empty_message)
             }

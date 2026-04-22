@@ -2,7 +2,9 @@ package com.adamjohnson.pokebinder.ui.drafts
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -34,11 +36,17 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
     private lateinit var draftsAdapter: DraftsAdapter
 
+    private var isSearchPanelVisible = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        isSearchPanelVisible = savedInstanceState?.getBoolean(STATE_SEARCH_PANEL_VISIBLE) ?: false
+
         val totalBindersCountTextView: TextView = view.findViewById(R.id.totalBindersCountTextView)
-        val totalLikesCountTextView: TextView = view.findViewById(R.id.totalLikesCountTextView)
+        val searchToggleButton: ImageButton = view.findViewById(R.id.searchToggleButton)
+        val searchFiltersContainer: View = view.findViewById(R.id.searchFiltersContainer)
+        val applySearchButton: Button = view.findViewById(R.id.applySearchButton)
         val searchEditText: EditText = view.findViewById(R.id.searchEditText)
         val filterRadioGroup: RadioGroup = view.findViewById(R.id.filterRadioGroup)
         val resultCountTextView: TextView = view.findViewById(R.id.resultCountTextView)
@@ -57,6 +65,24 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
 
         draftsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         draftsRecyclerView.adapter = draftsAdapter
+
+        updateSearchToggleButtonDescription(searchToggleButton)
+
+        searchToggleButton.setOnClickListener {
+            setSearchPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = !isSearchPanelVisible
+            )
+        }
+
+        applySearchButton.setOnClickListener {
+            setSearchPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = false
+            )
+        }
 
         searchEditText.doAfterTextChanged { editable ->
             draftsViewModel.updateSearchQuery(editable?.toString().orEmpty())
@@ -77,7 +103,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
                 UiState.Loading -> {
                     renderLoading(
                         totalBindersCountTextView = totalBindersCountTextView,
-                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
@@ -91,7 +116,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
                         searchEditText = searchEditText,
                         filterRadioGroup = filterRadioGroup,
                         totalBindersCountTextView = totalBindersCountTextView,
-                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
@@ -103,7 +127,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
                     renderError(
                         message = state.message,
                         totalBindersCountTextView = totalBindersCountTextView,
-                        totalLikesCountTextView = totalLikesCountTextView,
                         resultCountTextView = resultCountTextView,
                         draftsRecyclerView = draftsRecyclerView,
                         loadingView = loadingView,
@@ -114,11 +137,22 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
                 }
             }
         }
+
+        setSearchPanelVisible(
+            searchFiltersContainer = searchFiltersContainer,
+            searchToggleButton = searchToggleButton,
+            visible = isSearchPanelVisible
+        )
     }
 
     override fun onResume() {
         super.onResume()
         draftsViewModel.loadBinderPages()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_SEARCH_PANEL_VISIBLE, isSearchPanelVisible)
     }
 
     private fun openCreateNewBinder() {
@@ -190,16 +224,32 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         }
     }
 
+    private fun setSearchPanelVisible(
+        searchFiltersContainer: View,
+        searchToggleButton: ImageButton,
+        visible: Boolean
+    ) {
+        isSearchPanelVisible = visible
+        searchFiltersContainer.visibility = if (visible) View.VISIBLE else View.GONE
+        updateSearchToggleButtonDescription(searchToggleButton)
+    }
+
+    private fun updateSearchToggleButtonDescription(searchToggleButton: ImageButton) {
+        searchToggleButton.contentDescription = if (isSearchPanelVisible) {
+            getString(R.string.binders_hide_search)
+        } else {
+            getString(R.string.binders_show_search)
+        }
+    }
+
     private fun renderLoading(
         totalBindersCountTextView: TextView,
-        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
         emptyStateView: View
     ) {
-        totalBindersCountTextView.text = getString(R.string.binders_metric_zero)
-        totalLikesCountTextView.text = getString(R.string.binders_metric_zero)
+        totalBindersCountTextView.text = getString(R.string.binders_total_count, 0)
         resultCountTextView.text = getString(R.string.binders_results_default)
         draftsRecyclerView.visibility = View.GONE
         loadingView.visibility = View.VISIBLE
@@ -211,7 +261,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         searchEditText: EditText,
         filterRadioGroup: RadioGroup,
         totalBindersCountTextView: TextView,
-        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
@@ -224,8 +273,8 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         )
 
         draftsAdapter.submitList(screenState.binders)
-        totalBindersCountTextView.text = screenState.summary.totalBindersCount.toString()
-        totalLikesCountTextView.text = screenState.summary.totalLikesCount.toString()
+        totalBindersCountTextView.text =
+            getString(R.string.binders_total_count, screenState.totalBindersCount)
         resultCountTextView.text = getString(
             R.string.binders_results_label,
             screenState.binders.size
@@ -239,7 +288,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
     private fun renderError(
         message: String,
         totalBindersCountTextView: TextView,
-        totalLikesCountTextView: TextView,
         resultCountTextView: TextView,
         draftsRecyclerView: RecyclerView,
         loadingView: View,
@@ -248,8 +296,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         emptyMessageTextView: TextView
     ) {
         draftsAdapter.submitList(emptyList())
-        totalBindersCountTextView.text = getString(R.string.binders_metric_zero)
-        totalLikesCountTextView.text = getString(R.string.binders_metric_zero)
+        totalBindersCountTextView.text = getString(R.string.binders_total_count, 0)
         resultCountTextView.text = getString(R.string.binders_results_default)
         draftsRecyclerView.visibility = View.GONE
         loadingView.visibility = View.GONE
@@ -285,5 +332,9 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts) {
         }
 
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        private const val STATE_SEARCH_PANEL_VISIBLE = "stateSearchPanelVisible"
     }
 }

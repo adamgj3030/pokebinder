@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide
 
 class CollectionAdapter(
     private val onCardClick: (PokemonCard) -> Unit,
+    private val onCardLongClick: (PokemonCard) -> Unit,
     private val onDeleteClick: (PokemonCard) -> Unit
 ) : RecyclerView.Adapter<CollectionAdapter.CollectionViewHolder>() {
 
@@ -35,7 +36,7 @@ class CollectionAdapter(
     }
 
     override fun onBindViewHolder(holder: CollectionViewHolder, position: Int) {
-        holder.bind(cards[position], deleteModeEnabled, onCardClick, onDeleteClick)
+        holder.bind(cards[position], deleteModeEnabled, onCardClick, onCardLongClick, onDeleteClick)
     }
 
     override fun getItemCount(): Int {
@@ -45,17 +46,15 @@ class CollectionAdapter(
     class CollectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
-        private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
         private val deleteBadgeTextView: TextView = itemView.findViewById(R.id.deleteBadgeTextView)
 
         fun bind(
             card: PokemonCard,
             deleteModeEnabled: Boolean,
             onCardClick: (PokemonCard) -> Unit,
+            onCardLongClick: (PokemonCard) -> Unit,
             onDeleteClick: (PokemonCard) -> Unit
         ) {
-            cardNameTextView.text = card.name.ifBlank { card.cardId }
-
             Glide.with(itemView)
                 .load(card.imageUrl)
                 .placeholder(android.R.drawable.ic_menu_report_image)
@@ -66,6 +65,11 @@ class CollectionAdapter(
 
             itemView.setOnClickListener {
                 onCardClick(card)
+            }
+
+            itemView.setOnLongClickListener {
+                onCardLongClick(card)
+                true
             }
 
             deleteBadgeTextView.setOnClickListener {

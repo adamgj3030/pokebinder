@@ -8,7 +8,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="10dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,7 +38,7 @@
                 android:backgroundTint="@null"
                 android:minHeight="44dp"
                 android:paddingHorizontal="12dp"
-                android:text="Delete"
+                android:text="@string/collection_delete_mode"
                 android:textAllCaps="false"
                 android:textColor="@color/poke_text" />
 
@@ -45,7 +48,7 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_topbar_icon_button"
-                android:contentDescription="Show search and filters"
+                android:contentDescription="@string/show_search_and_filters"
                 android:padding="10dp"
                 android:src="@android:drawable/ic_menu_search"
                 android:tint="@color/poke_red_dark" />
@@ -59,7 +62,7 @@
             android:background="@drawable/bg_cta_primary"
             android:backgroundTint="@null"
             android:minHeight="48dp"
-            android:text="Add Cards"
+            android:text="@string/collection_add_cards"
             android:textAllCaps="false"
             android:textColor="@color/poke_text_on_red" />
 
@@ -79,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_binder_slot"
                 android:completionThreshold="1"
-                android:hint="Name"
+                android:hint="@string/common_name"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -92,7 +95,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_binder_slot"
                 android:completionThreshold="1"
-                android:hint="Set"
+                android:hint="@string/common_set"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -105,7 +108,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_binder_slot"
                 android:completionThreshold="1"
-                android:hint="Type"
+                android:hint="@string/common_type"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -117,7 +120,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_binder_slot"
-                android:hint="Card ID"
+                android:hint="@string/common_card_id"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -130,7 +133,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_binder_slot"
                 android:completionThreshold="1"
-                android:hint="Subtype"
+                android:hint="@string/common_subtype"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -143,7 +146,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_binder_slot"
                 android:completionThreshold="1"
-                android:hint="Rarity"
+                android:hint="@string/common_rarity"
                 android:inputType="text"
                 android:padding="12dp"
                 android:textColor="@color/poke_text"
@@ -155,7 +158,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:buttonTint="@color/poke_red_dark"
-                android:text="Full Art only"
+                android:text="@string/common_full_art_only"
                 android:textColor="@color/poke_text" />
 
             <LinearLayout
@@ -173,7 +176,7 @@
                     android:backgroundTint="@null"
                     android:minHeight="44dp"
                     android:paddingHorizontal="14dp"
-                    android:text="Clear"
+                    android:text="@string/common_clear"
                     android:textAllCaps="false"
                     android:textColor="@color/poke_text" />
 
@@ -186,7 +189,7 @@
                     android:backgroundTint="@null"
                     android:minHeight="44dp"
                     android:paddingHorizontal="14dp"
-                    android:text="Search"
+                    android:text="@string/common_search"
                     android:textAllCaps="false"
                     android:textColor="@color/poke_text_on_red" />
             </LinearLayout>
@@ -211,7 +214,7 @@
             android:layout_marginTop="10dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="12dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -266,7 +269,8 @@
                 android:id="@+id/emptyTitleTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:text="@string/collection_empty_title"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textColor="@color/poke_text"
                 android:textStyle="bold" />
 
@@ -276,6 +280,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
+                android:text="@string/collection_empty_message"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="@color/poke_text_secondary" />
 
@@ -283,12 +288,12 @@
                 android:id="@+id/emptyAddCardsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="14dp"
                 android:background="@drawable/bg_cta_primary"
                 android:backgroundTint="@null"
-                android:minHeight="48dp"
+                android:minHeight="44dp"
                 android:paddingHorizontal="16dp"
-                android:text="Add Cards"
+                android:text="@string/collection_add_cards"
                 android:textAllCaps="false"
                 android:textColor="@color/poke_text_on_red" />
         </LinearLayout>

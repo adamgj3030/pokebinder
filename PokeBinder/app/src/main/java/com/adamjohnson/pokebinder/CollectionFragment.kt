@@ -80,12 +80,22 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             collectionAdapter.submitData(currentCards, isDeleteModeEnabled)
         }
 
+        updateSearchToggleButtonDescription(searchToggleButton)
+
         searchToggleButton.setOnClickListener {
-            setFilterPanelVisible(searchFiltersContainer, !isFilterPanelVisible)
+            setFilterPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = !isFilterPanelVisible
+            )
         }
 
         applySearchButton.setOnClickListener {
-            setFilterPanelVisible(searchFiltersContainer, false)
+            setFilterPanelVisible(
+                searchFiltersContainer = searchFiltersContainer,
+                searchToggleButton = searchToggleButton,
+                visible = false
+            )
         }
 
         nameSearchEditText.doAfterTextChanged { editable ->
@@ -144,12 +154,15 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             onCardClick = { card ->
                 showCardPreview(card)
             },
+            onCardLongClick = { card ->
+                showCardPreview(card)
+            },
             onDeleteClick = { card ->
                 confirmDeleteCard(card)
             }
         )
 
-        collectionRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
+        collectionRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         collectionRecyclerView.adapter = collectionAdapter
 
         collectionViewModel.nameQuery.observe(viewLifecycleOwner) { query ->
@@ -240,7 +253,11 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         }
 
         updateDeleteModeButton(deleteModeButton)
-        setFilterPanelVisible(searchFiltersContainer, isFilterPanelVisible)
+        setFilterPanelVisible(
+            searchFiltersContainer = searchFiltersContainer,
+            searchToggleButton = searchToggleButton,
+            visible = isFilterPanelVisible
+        )
     }
 
     override fun onResume() {
@@ -281,10 +298,10 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         val title = card.name.ifBlank { card.cardId }
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Remove card?")
-            .setMessage("Remove \"$title\" from your collection?")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Remove") { _, _ ->
+            .setTitle(R.string.collection_remove_card_title)
+            .setMessage(getString(R.string.collection_remove_card_message, title))
+            .setNegativeButton(R.string.collection_remove_card_cancel, null)
+            .setPositiveButton(R.string.collection_remove_card_confirm) { _, _ ->
                 collectionViewModel.removeCard(card.cardId) { errorMessage ->
                     if (errorMessage != null && isAdded) {
                         Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
@@ -296,18 +313,28 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
     private fun updateDeleteModeButton(deleteModeButton: Button) {
         deleteModeButton.text = if (isDeleteModeEnabled) {
-            "Done"
+            getString(R.string.common_done)
         } else {
-            "Delete"
+            getString(R.string.collection_delete_mode)
         }
     }
 
     private fun setFilterPanelVisible(
         searchFiltersContainer: View,
+        searchToggleButton: ImageButton,
         visible: Boolean
     ) {
         isFilterPanelVisible = visible
         searchFiltersContainer.visibility = if (visible) View.VISIBLE else View.GONE
+        updateSearchToggleButtonDescription(searchToggleButton)
+    }
+
+    private fun updateSearchToggleButtonDescription(searchToggleButton: ImageButton) {
+        searchToggleButton.contentDescription = if (isFilterPanelVisible) {
+            getString(R.string.hide_search_and_filters)
+        } else {
+            getString(R.string.show_search_and_filters)
+        }
     }
 
     private fun renderLoading(
@@ -341,7 +368,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             emptyStateView.visibility = View.VISIBLE
             emptyTitleTextView.text = getString(R.string.collection_empty_title)
             emptyMessageTextView.text = if (hasActiveFilters()) {
-                "Try changing or clearing one of the filters."
+                getString(R.string.common_filters_empty_message)
             } else {
                 getString(R.string.collection_empty_message)
             }

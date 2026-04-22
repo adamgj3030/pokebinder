@@ -344,13 +344,6 @@ class PageDetailFragment : Fragment(R.layout.fragment_page_detail) {
             PokemonCardImageBinder.bind(imageView, pokemonCard) { clickedCard ->
                 showCardPreview(clickedCard)
             }
-
-            if (pokemonCard == null) {
-                imageView.setImageResource(android.R.drawable.ic_menu_report_image)
-                imageView.alpha = 0.35f
-            } else {
-                imageView.alpha = 1f
-            }
         }
     }
 

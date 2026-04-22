@@ -15,10 +15,18 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/previewSubtitleTextView"
+        android:id="@+id/previewSetTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="@color/poke_text_secondary" />
+
+    <TextView
+        android:id="@+id/previewMetadataTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="@color/poke_text_secondary" />
 
@@ -49,37 +57,18 @@
         android:textColor="@color/poke_text_secondary"
         android:visibility="gone" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/closeButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end"
         android:layout_marginTop="18dp"
-        android:gravity="end"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/detailsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_cta_primary"
-            android:backgroundTint="@null"
-            android:minHeight="44dp"
-            android:paddingHorizontal="14dp"
-            android:text="@string/card_preview_details"
-            android:textAllCaps="false"
-            android:textColor="@color/poke_text_on_red" />
-
-        <Button
-            android:id="@+id/closeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_cta_secondary"
-            android:backgroundTint="@null"
-            android:minHeight="44dp"
-            android:paddingHorizontal="14dp"
-            android:text="@string/card_preview_close"
-            android:textAllCaps="false"
-            android:textColor="@color/poke_text" />
-    </LinearLayout>
+        android:background="@drawable/bg_cta_secondary"
+        android:backgroundTint="@null"
+        android:minHeight="44dp"
+        android:paddingHorizontal="14dp"
+        android:text="@string/card_preview_close"
+        android:textAllCaps="false"
+        android:textColor="@color/poke_text" />
 
 </LinearLayout>

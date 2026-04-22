@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.adamjohnson.pokebinder.R
 import com.adamjohnson.pokebinder.data.model.PokemonCard
@@ -13,7 +12,7 @@ import com.bumptech.glide.Glide
 
 class CardSearchAdapter(
     private val onSaveToggleClick: (PokemonCard) -> Unit,
-    private val onCardClick: ((PokemonCard) -> Unit)? = null
+    private val onCardLongClick: ((PokemonCard) -> Unit)? = null
 ) : RecyclerView.Adapter<CardSearchAdapter.CardSearchViewHolder>() {
 
     private val cards = mutableListOf<PokemonCard>()
@@ -38,7 +37,7 @@ class CardSearchAdapter(
     override fun onBindViewHolder(holder: CardSearchViewHolder, position: Int) {
         val card = cards[position]
         val isSaved = savedCardIds.contains(card.cardId)
-        holder.bind(card, isSaved, onSaveToggleClick, onCardClick)
+        holder.bind(card, isSaved, onSaveToggleClick, onCardLongClick)
     }
 
     override fun getItemCount(): Int {
@@ -48,56 +47,31 @@ class CardSearchAdapter(
     class CardSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val cardImageView: ImageView = itemView.findViewById(R.id.cardImageView)
-        private val cardNameTextView: TextView = itemView.findViewById(R.id.cardNameTextView)
-        private val saveButton: TextView = itemView.findViewById(R.id.saveButton)
+        private val savedOverlayView: View = itemView.findViewById(R.id.savedOverlayView)
+        private val savedBadgeTextView: TextView = itemView.findViewById(R.id.savedBadgeTextView)
 
         fun bind(
             card: PokemonCard,
             isSaved: Boolean,
             onSaveToggleClick: (PokemonCard) -> Unit,
-            onCardClick: ((PokemonCard) -> Unit)?
+            onCardLongClick: ((PokemonCard) -> Unit)?
         ) {
-            val context = itemView.context
-
-            cardNameTextView.text = card.name.ifBlank { card.cardId }
-
             Glide.with(itemView)
                 .load(card.imageUrl)
                 .placeholder(android.R.drawable.ic_menu_report_image)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(cardImageView)
 
-            saveButton.text = if (isSaved) {
-                context.getString(R.string.saved_in_collection)
-            } else {
-                context.getString(R.string.save_to_collection)
-            }
+            savedOverlayView.visibility = if (isSaved) View.VISIBLE else View.GONE
+            savedBadgeTextView.visibility = if (isSaved) View.VISIBLE else View.GONE
 
-            saveButton.setBackgroundResource(
-                if (isSaved) {
-                    R.drawable.bg_cta_primary
-                } else {
-                    R.drawable.bg_cta_secondary
-                }
-            )
-
-            saveButton.setTextColor(
-                ContextCompat.getColor(
-                    context,
-                    if (isSaved) android.R.color.white else R.color.poke_text
-                )
-            )
-
-            saveButton.setOnClickListener {
+            itemView.setOnClickListener {
                 onSaveToggleClick(card)
             }
 
-            if (onCardClick != null) {
-                itemView.setOnClickListener {
-                    onCardClick(card)
-                }
-            } else {
-                itemView.setOnClickListener(null)
+            itemView.setOnLongClickListener {
+                onCardLongClick?.invoke(card)
+                onCardLongClick != null
             }
         }
     }

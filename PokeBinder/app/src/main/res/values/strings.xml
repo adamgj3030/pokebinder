@@ -5,6 +5,20 @@
     <string name="password_hint">Password</string>
     <string name="sign_in">Sign In</string>
     <string name="create_account">Create Account</string>
+    <string name="show_search_and_filters">Show search and filters</string>
+    <string name="hide_search_and_filters">Hide search and filters</string>
+    <string name="common_name">Name</string>
+    <string name="common_set">Set</string>
+    <string name="common_type">Type</string>
+    <string name="common_card_id">Card ID</string>
+    <string name="common_subtype">Subtype</string>
+    <string name="common_rarity">Rarity</string>
+    <string name="common_full_art_only">Full Art only</string>
+    <string name="common_clear">Clear</string>
+    <string name="common_search">Search</string>
+    <string name="common_apply">Apply</string>
+    <string name="common_done">Done</string>
+    <string name="common_filters_empty_message">Try changing or clearing one of the filters.</string>
     <string name="auth_loading">Working...</string>
     <string name="profile_title">My Profile</string>
     <string name="profile_signed_in_message">You are signed into PokeBinder as %1$s.</string>
@@ -29,31 +43,29 @@
     <string name="profile_your_likes">Your Likes</string>
     <string name="profile_your_comments">Your Comments</string>
     <string name="sign_out">Sign Out</string>
-
     <string name="card_search_title">Card Catalog</string>
-    <string name="card_search_subtitle">Search the imported local Pokémon card list.</string>
-    <string name="card_search_hint">Search by name, set, type, or card ID</string>
     <string name="card_search_loading">Loading cards...</string>
     <string name="card_search_empty_title">No cards found</string>
     <string name="card_search_empty_message">Try a different search term.</string>
     <string name="card_search_error_title">Unable to load cards</string>
     <string name="card_search_results_default">Results: 0</string>
     <string name="card_search_results_label">Results: %1$d</string>
-    <string name="save_to_collection">Save</string>
     <string name="saved_in_collection">Saved</string>
-
     <string name="collection_title">My Collection</string>
-    <string name="collection_subtitle">View the cards you have saved to your collection.</string>
     <string name="collection_loading">Loading collection...</string>
     <string name="collection_empty_title">No saved cards yet</string>
     <string name="collection_empty_message">Save cards from the catalog to see them here.</string>
     <string name="collection_error_title">Unable to load collection</string>
     <string name="collection_results_default">Results: 0</string>
     <string name="collection_results_label">Results: %1$d</string>
+    <string name="collection_add_cards">Add Cards</string>
+    <string name="collection_delete_mode">Delete</string>
+    <string name="collection_remove_card_title">Remove card?</string>
+    <string name="collection_remove_card_message">Remove "%1$s" from your collection?</string>
+    <string name="collection_remove_card_cancel">Cancel</string>
+    <string name="collection_remove_card_confirm">Remove</string>
     <string name="remove_from_collection">Remove</string>
-
     <string name="feed_title">Feed</string>
-    <string name="feed_subtitle">Browse published binder pages.</string>
     <string name="feed_loading">Loading published pages...</string>
     <string name="feed_empty_title">No published pages yet</string>
     <string name="feed_empty_message">Published binder pages will appear here.</string>
@@ -61,12 +73,9 @@
     <string name="feed_results_default">Published pages: 0</string>
     <string name="feed_results_label">Published pages: %1$d</string>
     <string name="feed_item_untitled">Untitled page</string>
-    <string name="feed_item_filled_slots">Filled slots: %1$d/9</string>
     <string name="feed_item_social_summary">%1$d likes • %2$d comments</string>
-    <string name="feed_item_published_at">Published: %1$s</string>
-    <string name="feed_item_by_username">By %1$s</string>
+    <string name="feed_item_by_username">by %1$s</string>
     <string name="feed_item_unknown_user">Unknown user</string>
-
     <string name="binder_editor_title">Binder Editor</string>
     <string name="binder_editor_subtitle">Tap a slot, then tap a saved collection card to place it on the page.</string>
     <string name="binder_editor_page_title_hint">Binder page title</string>
@@ -95,26 +104,14 @@
     <string name="binder_editor_publish_ready_message">Ready to publish.</string>
     <string name="binder_editor_publish_not_ready_message">Fill all 9 slots to publish. Filled: %1$d/9.</string>
     <string name="binder_editor_publish_read_only_message">This page has been published and is now read-only.</string>
-
-    <string name="drafts_title">Binders</string>
-    <string name="drafts_subtitle">Browse your drafts and published binders in one place.</string>
-    <string name="drafts_loading">Loading binders...</string>
-    <string name="drafts_empty_title">Unable to load binders</string>
-    <string name="drafts_empty_message">Please try again.</string>
-    <string name="drafts_error_title">Unable to load binders</string>
-    <string name="drafts_results_default">Binders shown: 0</string>
-    <string name="drafts_results_label">Binders shown: %1$d</string>
-    <string name="drafts_item_untitled">Untitled binder</string>
-    <string name="drafts_item_filled_slots">Filled slots: %1$d/9</string>
-    <string name="drafts_item_updated_at">Last updated: %1$s</string>
-
     <string name="binders_title">Binders</string>
     <string name="binders_loading">Loading binders...</string>
     <string name="binders_results_default">Binders shown: 0</string>
     <string name="binders_results_label">Binders shown: %1$d</string>
-    <string name="binders_total_label">Total binders</string>
-    <string name="binders_total_likes_label">Total likes</string>
-    <string name="binders_metric_zero">0</string>
+    <string name="binders_total_count">Total binders: %1$d</string>
+    <string name="binders_total_count_zero">Total binders: 0</string>
+    <string name="binders_show_search">Show binder search and filters</string>
+    <string name="binders_hide_search">Hide binder search and filters</string>
     <string name="binders_search_hint">Search binders by title</string>
     <string name="binders_filter_all">All</string>
     <string name="binders_filter_drafts">Drafts</string>
@@ -133,20 +130,8 @@
     <string name="binders_delete_confirm">Delete</string>
     <string name="binders_delete_cancel">Cancel</string>
     <string name="binders_delete_success">Binder deleted.</string>
-
     <string name="page_detail_title">Published Page</string>
     <string name="page_detail_untitled">Untitled page</string>
-    <string name="page_detail_read_only_message">This published binder page is read-only.</string>
-    <string name="page_detail_status_published">Status: Published</string>
-    <string name="page_detail_filled_slots">Filled slots: %1$d/9</string>
-    <string name="page_detail_published_at">Published: %1$s</string>
-    <string name="page_detail_grid_title">Binder Grid</string>
-    <string name="page_detail_grid_subtitle">Card names and set names are resolved from the imported local dataset.</string>
-    <string name="page_detail_slot_label">Slot %1$d
-%2$s</string>
-    <string name="page_detail_slot_empty">Empty</string>
-    <string name="page_detail_slot_card_info">%1$s
-%2$s</string>
     <string name="page_detail_loading">Loading page...</string>
     <string name="page_detail_empty_message">Published page not found.</string>
     <string name="page_detail_social_title">Social</string>
@@ -160,8 +145,6 @@
     <string name="page_detail_comment_sign_in_hint">Sign in to add a comment</string>
     <string name="page_detail_submit_comment">Submit Comment</string>
     <string name="page_detail_sign_in_to_like">Sign in to like</string>
-    <string name="page_detail_sign_in_to_comment">Sign in to comment</string>
-    <string name="page_detail_sign_in_social_message">Sign in to like and comment on published pages.</string>
     <string name="page_detail_comment_submit_loading">Posting comment...</string>
     <string name="page_detail_comment_submit_success">Comment added.</string>
     <string name="page_detail_comment_required">Comment text is required.</string>
@@ -169,9 +152,8 @@
     <string name="page_detail_comments_loading">Loading comments...</string>
     <string name="page_detail_comments_empty_message">No comments yet. Be the first to comment.</string>
     <string name="page_detail_comment_user_fallback">User</string>
-    <string name="page_detail_by_username">By %1$s</string>
+    <string name="page_detail_by_username">by %1$s</string>
     <string name="page_detail_unknown_user">Unknown user</string>
-
     <string name="social_pages_likes_title">Your Likes</string>
     <string name="social_pages_comments_title">Your Comments</string>
     <string name="social_pages_likes_loading">Loading liked pages...</string>
@@ -181,21 +163,14 @@
     <string name="social_pages_comments_empty_title">No commented pages yet</string>
     <string name="social_pages_comments_empty_message">Pages you comment on will appear here.</string>
     <string name="social_pages_error_title">Unable to load pages</string>
-
     <string name="card_types_label">Types: %1$s</string>
     <string name="card_types_placeholder">Types: -</string>
     <string name="pokemon_card_image">Pokémon card image</string>
-
     <string name="card_preview_title_fallback">Card Preview</string>
     <string name="card_preview_unknown_card">Unable to load this card preview.</string>
-    <string name="card_preview_set_and_id">%1$s • %2$s</string>
-    <string name="card_preview_details">Details</string>
     <string name="card_preview_close">Close</string>
-    <string name="card_preview_details_title">Card Details</string>
-    <string name="card_preview_details_message">Name: %1$s
-Set: %2$s
-Types: %3$s
-Card ID: %4$s</string>
+    <string name="card_preview_type_and_rarity">Type: %1$s
+Rarity: %2$s</string>
     <string name="card_preview_unknown_value">-</string>
     <string name="card_preview_card_content_description">%1$s card</string>
 </resources>

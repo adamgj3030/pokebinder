@@ -58,12 +58,6 @@
                         android:textColor="@color/poke_text_secondary"
                         tools:text="by AdamJohnson" />
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/readOnlyMessageTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -74,18 +68,6 @@
                 android:background="@drawable/bg_section_surface"
                 android:orientation="vertical"
                 android:padding="10dp">
-
-                <TextView
-                    android:id="@+id/pageGridTitleTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/pageGridSubtitleTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

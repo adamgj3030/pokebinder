@@ -11,100 +11,53 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_section_surface"
-        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="16dp">
 
         <TextView
             android:id="@+id/draftsTitleTextView"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/binders_title"
             android:textAppearance="?attr/textAppearanceHeadlineSmall"
             android:textColor="@color/poke_text"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Your drafts and published binders, all in one place."
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="@color/poke_text_secondary" />
+        <ImageButton
+            android:id="@+id/searchToggleButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_topbar_icon_button"
+            android:contentDescription="@string/binders_show_search"
+            android:padding="10dp"
+            android:src="@android:drawable/ic_menu_search"
+            android:tint="@color/poke_red_dark" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/summaryBarLayout"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/totalBindersCountTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_section_surface"
-            android:orientation="vertical"
-            android:padding="14dp">
-
-            <TextView
-                android:id="@+id/totalBindersLabelTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/binders_total_label"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/poke_text_secondary" />
-
-            <TextView
-                android:id="@+id/totalBindersCountTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/binders_metric_zero"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                android:textColor="@color/poke_text"
-                android:textStyle="bold"
-                tools:text="8" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_section_surface"
-            android:orientation="vertical"
-            android:padding="14dp">
-
-            <TextView
-                android:id="@+id/totalLikesLabelTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/binders_total_likes_label"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="@color/poke_text_secondary" />
-
-            <TextView
-                android:id="@+id/totalLikesCountTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/binders_metric_zero"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                android:textColor="@color/poke_text"
-                android:textStyle="bold"
-                tools:text="14" />
-        </LinearLayout>
-    </LinearLayout>
+        android:background="@drawable/bg_counter_chip"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:text="@string/binders_total_count_zero"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="@color/poke_text"
+        android:textStyle="bold" />
 
     <LinearLayout
+        android:id="@+id/searchFiltersContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_section_surface"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp"
+        android:visibility="gone">
 
         <EditText
             android:id="@+id/searchEditText"
@@ -150,6 +103,20 @@
                 android:text="@string/binders_filter_published"
                 android:textColor="@color/poke_text" />
         </RadioGroup>
+
+        <Button
+            android:id="@+id/applySearchButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_cta_secondary"
+            android:backgroundTint="@null"
+            android:minHeight="44dp"
+            android:paddingHorizontal="14dp"
+            android:text="@string/common_apply"
+            android:textAllCaps="false"
+            android:textColor="@color/poke_text" />
     </LinearLayout>
 
     <TextView

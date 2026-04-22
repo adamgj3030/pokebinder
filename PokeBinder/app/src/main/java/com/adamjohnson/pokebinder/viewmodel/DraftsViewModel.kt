@@ -11,11 +11,6 @@ import com.adamjohnson.pokebinder.utils.UiState
 
 class DraftsViewModel : ViewModel() {
 
-    data class BindersSummary(
-        val totalBindersCount: Int = 0,
-        val totalLikesCount: Int = 0
-    )
-
     enum class BinderFilter {
         ALL,
         DRAFTS,
@@ -23,7 +18,7 @@ class DraftsViewModel : ViewModel() {
     }
 
     data class BindersScreenState(
-        val summary: BindersSummary = BindersSummary(),
+        val totalBindersCount: Int = 0,
         val binders: List<BinderPage> = emptyList(),
         val searchQuery: String = "",
         val filter: BinderFilter = BinderFilter.ALL
@@ -156,20 +151,13 @@ class DraftsViewModel : ViewModel() {
     }
 
     private fun publishCurrentState() {
-        val summary = BindersSummary(
-            totalBindersCount = allBinderPages.size,
-            totalLikesCount = allBinderPages
-                .filter { it.status == BinderPageStatus.PUBLISHED }
-                .sumOf { it.likeCount }
-        )
-
         val filteredBinders = allBinderPages.filter { binderPage ->
             matchesFilter(binderPage) && matchesSearchQuery(binderPage)
         }
 
         _bindersState.value = UiState.Success(
             BindersScreenState(
-                summary = summary,
+                totalBindersCount = allBinderPages.size,
                 binders = filteredBinders,
                 searchQuery = currentSearchQuery,
                 filter = currentFilter
